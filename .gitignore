@@ -1,0 +1,12 @@
+warp-*
+.terraform*
+3rdparty
+node_modules
+target
+lib/bs
+deps
+dist/*.tar.gz
+_build
+_rebar_tmp
+*.gif
+release.tar.gz
