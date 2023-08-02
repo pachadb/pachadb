@@ -1,6 +1,0 @@
-name = "pachadb-worker"
-main = "build/worker/shim.mjs"
-compatibility_date = "2023-07-24"
-
-[build]
-command = "cargo install worker-build && worker-build --release"

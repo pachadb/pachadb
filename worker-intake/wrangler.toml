@@ -1,0 +1,18 @@
+name = "pachadb-worker"
+main = "build/worker/shim.mjs"
+compatibility_date = "2023-07-24"
+
+usage_model = "bundled"
+
+kv_namespaces = [
+    { binding = "pachadb-entities-store", id = "1ee0610ec05b4240bd7891b1789056e8" },
+    { binding = "pachadb-facts-store", id = "88c04e76bdb04ff78783cc5d850c86ac" }
+]
+
+[[queues.producers]]
+queue = "pachadb-facts"
+binding = "pachadb-facts-queue"
+
+[build]
+command = "cargo install worker-build && worker-build --release"
+
