@@ -1,8 +1,17 @@
 mod util;
 
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use thiserror::*;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("unknown error")]
+    Unknown
+}
+
+pub type PachaResult<V> = std::result::Result<V, Error>;
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -71,9 +80,30 @@ impl Entity {
         }
     }
 
-    fn insert_fact(&mut self, fact: Fact) {
+    pub fn insert_fact(&mut self, fact: Fact) {
         self.fields.insert(fact.field.clone(), fact.value.clone());
         self.prior_facts.insert(fact.field.clone(), fact);
         self.last_updated_at = chrono::Utc::now();
     }
+}
+
+pub trait EntityStore: Default {
+    fn put(&mut self, uri: Uri, val: Entity) -> PachaResult<()>;
+    fn get(&mut self, uri: Uri) -> PachaResult<Option<Entity>>;
+}
+
+pub trait FactStore: Default {
+    fn put(&mut self, uri: Uri, val: Fact) -> PachaResult<()>;
+    fn get(&mut self, uri: Uri) -> PachaResult<Option<Fact>>;
+}
+
+
+#[derive(Debug, Default)]
+pub struct PachaDb<EntityStore, FactStore> {
+    entity_store: EntityStore,
+    fact_store: FactStore,
+}
+
+impl<ES: EntityStore, FS: FactStore>  PachaDb<ES, FS> {
+    pub fn new() -> Self { Default::default() }
 }

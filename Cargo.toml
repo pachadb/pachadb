@@ -2,6 +2,7 @@
 members = [
   "cli",
   "core",
+  "core-wasm",
   "worker-consolidation",
   "worker-intake",
 ]
