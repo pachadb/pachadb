@@ -16,7 +16,7 @@ impl Term {
     }
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Substitution {
     pub subs: Vec<(Term, Term)>,
 }
@@ -48,6 +48,10 @@ impl Substitution {
         self.subs.extend(other.subs);
         self
     }
+
+    pub fn subs(self) -> Vec<(Term, Term)> {
+        self.subs
+    }
 }
 
 #[derive(Clone, Hash, Eq, PartialEq, Ord, PartialOrd)]
@@ -58,17 +62,10 @@ pub struct Atom {
 
 impl Atom {
     pub fn unify(&self, other: &Atom) -> Option<Substitution> {
-        if self.relation == other.relation {
-            let sub = self.do_unify(
-                Substitution::default(),
-                self.args.iter().zip(other.args.iter()),
-            );
-
-            if sub.is_empty() {
-                None
-            } else {
-                Some(sub)
-            }
+        println!("unify {:?} {:?}", self, other);
+        if self.relation == other.relation && self.args.len() == other.args.len() {
+            println!("unify {:?} {:?}", self.args, other.args);
+            self.do_unify(self.args.iter().zip(other.args.iter()))
         } else {
             None
         }
@@ -76,29 +73,33 @@ impl Atom {
 
     fn do_unify<'a>(
         &'a self,
-        init: Substitution,
         mut iter: impl Iterator<Item = (&'a Term, &'a Term)>,
-    ) -> Substitution {
+    ) -> Option<Substitution> {
         let next = iter.next();
-
-        let Some((a, b))  = next else { return init };
+        println!("next {:?}", &next);
+        let Some((a, b)) = next else { return Some(Substitution::default()) };
 
         match (a, b) {
             // we have values on both sides, they must match
             (Term::Sym(a), Term::Sym(b)) => {
+                println!("sym {:?} == syn {:?} => {}", a, b, a == b);
                 if a == b {
-                    self.do_unify(init, iter)
+                    self.do_unify(iter)
                 } else {
-                    init
+                    None
                 }
             }
 
             // we have a variable that is unified to a symbol
             (v @ Term::Var(_), s1 @ Term::Sym(_)) => {
-                let inc_sub = self.do_unify(init, iter);
-                match inc_sub.find(v) {
-                    Some(s2) if *s1 != s2 => inc_sub,
-                    _ => inc_sub.prepend(v.clone(), s1.clone()),
+                println!("var {:?} == syn {:?}", v, s1);
+                let inc_sub = self.do_unify(iter)?;
+                let find = inc_sub.find(v);
+                println!("inc_sub {:?}", inc_sub);
+                println!("find {:?}", find);
+                match find {
+                    Some(s2) if *s1 != s2 => None,
+                    _ => Some(inc_sub.prepend(v.clone(), s1.clone())),
                 }
             }
 
@@ -172,6 +173,7 @@ impl Solver {
 
         for rule in rules {
             let new_facts = self.eval_rule(rule, kb);
+            println!("new_knowledge {:#?}", &new_facts);
             new_kb.extend(new_facts);
         }
 
@@ -179,12 +181,16 @@ impl Solver {
     }
 
     pub fn eval_rule(&self, rule: &Rule, kb: &HashSet<Atom>) -> Vec<Atom> {
+        println!("eval_rule {:?}", &rule);
+
         let walked_body = rule
             .body
             .iter()
             .rfold(vec![Substitution::default()], |subs, atom| {
                 self.eval_atom(kb, subs, atom)
             });
+
+        println!("walked_body {:?}", &walked_body);
 
         walked_body
             .iter()
@@ -202,14 +208,38 @@ impl Solver {
             .flat_map(|sub| {
                 let lowered_atom = atom.clone().substitute(sub);
 
-                kb.iter()
-                    .filter_map(|kb_atom| lowered_atom.unify(kb_atom))
+                println!(
+                    "eval_atom {:?} {:?} {:?} {:#?}",
+                    &atom, &sub, &lowered_atom, &kb
+                );
+
+                let exts = kb
+                    .iter()
+                    .filter_map(|kb_atom| {
+                        let unif = lowered_atom.unify(kb_atom);
+                        println!(
+                            "unif {} {:?} {:?} {:?}",
+                            lowered_atom == *kb_atom,
+                            lowered_atom,
+                            kb_atom,
+                            unif
+                        );
+                        unif
+                    })
                     .map(|sub2| sub.clone().concat(sub2))
-                    .collect::<Vec<Substitution>>()
+                    .collect::<Vec<Substitution>>();
+
+                println!("extensions {:#?}", &exts);
+
+                exts
             })
             .collect()
     }
 }
+
+struct QueryPlanner {}
+
+impl QueryPlanner {}
 
 impl std::fmt::Debug for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -334,8 +364,8 @@ mod test {
 
         let fact_atom = atom!(sym!("leandro"), sym!("likes"), sym!("metallica"));
         let fact = fact!("leandro", "likes", "metallica");
-        let unif = fact_atom.unify(&fact);
-        assert!(unif.is_none());
+        let unif = fact_atom.unify(&fact).unwrap();
+        assert_eq!(unif, Substitution::default());
     }
 
     #[test]
@@ -503,11 +533,12 @@ mod test {
             adviser!("David Wheeler", "Andy Hopper"),
             adviser!("Rod Burstall", "Alan Mycroft"),
             adviser!("Robin Milner", "Alan Mycroft"),
-            // academicAncestor(X, Y) :- adviser(X, Y).,
+            // academicAncestor(X, Y) :- adviser(X, Y).
             rule!(
                 atom!(var!("X"), sym!("academicAncestor"), var!("Y")),
                 vec![atom!(var!("X"), sym!("adviser"), var!("Y"))]
             ),
+            // academicAncestor(X, Z) :- adviser(X, Y), academicAncestor(Y, Z).
             rule!(
                 atom!(var!("X"), sym!("academicAncestor"), var!("Z")),
                 vec![
@@ -523,39 +554,19 @@ mod test {
         assert_eq!(
             result,
             vec![
-                academicAncestor!("Alan Mycroft", "Alan Mycroft").head,
-                academicAncestor!("Alan Mycroft", "Andrew Rice").head,
-                academicAncestor!("Alan Mycroft", "Andy Hopper").head,
                 academicAncestor!("Alan Mycroft", "Dominic Orchard").head,
                 academicAncestor!("Alan Mycroft", "Mistral Contrastin").head,
-                academicAncestor!("Andrew Rice", "Alan Mycroft").head,
-                academicAncestor!("Andrew Rice", "Andrew Rice").head,
-                academicAncestor!("Andrew Rice", "Andy Hopper").head,
-                academicAncestor!("Andrew Rice", "Dominic Orchard").head,
                 academicAncestor!("Andrew Rice", "Mistral Contrastin").head,
-                academicAncestor!("Andy Hopper", "Alan Mycroft").head,
                 academicAncestor!("Andy Hopper", "Andrew Rice").head,
-                academicAncestor!("Andy Hopper", "Andy Hopper").head,
-                academicAncestor!("Andy Hopper", "Dominic Orchard").head,
                 academicAncestor!("Andy Hopper", "Mistral Contrastin").head,
-                academicAncestor!("David Wheeler", "Alan Mycroft").head,
                 academicAncestor!("David Wheeler", "Andrew Rice").head,
                 academicAncestor!("David Wheeler", "Andy Hopper").head,
-                academicAncestor!("David Wheeler", "Dominic Orchard").head,
                 academicAncestor!("David Wheeler", "Mistral Contrastin").head,
-                academicAncestor!("Dominic Orchard", "Alan Mycroft").head,
-                academicAncestor!("Dominic Orchard", "Andrew Rice").head,
-                academicAncestor!("Dominic Orchard", "Andy Hopper").head,
-                academicAncestor!("Dominic Orchard", "Dominic Orchard").head,
                 academicAncestor!("Dominic Orchard", "Mistral Contrastin").head,
                 academicAncestor!("Robin Milner", "Alan Mycroft").head,
-                academicAncestor!("Robin Milner", "Andrew Rice").head,
-                academicAncestor!("Robin Milner", "Andy Hopper").head,
                 academicAncestor!("Robin Milner", "Dominic Orchard").head,
                 academicAncestor!("Robin Milner", "Mistral Contrastin").head,
                 academicAncestor!("Rod Burstall", "Alan Mycroft").head,
-                academicAncestor!("Rod Burstall", "Andrew Rice").head,
-                academicAncestor!("Rod Burstall", "Andy Hopper").head,
                 academicAncestor!("Rod Burstall", "Dominic Orchard").head,
                 academicAncestor!("Rod Burstall", "Mistral Contrastin").head,
                 adviser!("Alan Mycroft", "Dominic Orchard").head,
@@ -564,7 +575,78 @@ mod test {
                 adviser!("David Wheeler", "Andy Hopper").head,
                 adviser!("Dominic Orchard", "Mistral Contrastin").head,
                 adviser!("Robin Milner", "Alan Mycroft").head,
-                adviser!("Rod Burstall", "Alan Mycroft").head
+                adviser!("Rod Burstall", "Alan Mycroft").head,
+            ]
+        );
+    }
+
+    #[test]
+    fn solve_query_ancestor() {
+        let rules = vec![
+            adviser!("Andrew Rice", "Mistral Contrastin"),
+            adviser!("Dominic Orchard", "Mistral Contrastin"),
+            adviser!("Andy Hopper", "Andrew Rice"),
+            adviser!("Alan Mycroft", "Dominic Orchard"),
+            adviser!("David Wheeler", "Andy Hopper"),
+            adviser!("Rod Burstall", "Alan Mycroft"),
+            adviser!("Robin Milner", "Alan Mycroft"),
+            // academicAncestor(X, Y) :- adviser(X, Y).
+            rule!(
+                atom!(var!("X"), sym!("academicAncestor"), var!("Y")),
+                vec![atom!(var!("X"), sym!("adviser"), var!("Y"))]
+            ),
+            // academicAncestor(X, Z) :- adviser(X, Y), academicAncestor(Y, Z).
+            rule!(
+                atom!(var!("X"), sym!("academicAncestor"), var!("Z")),
+                vec![
+                    atom!(var!("X"), sym!("adviser"), var!("Y")),
+                    atom!(var!("Y"), sym!("academicAncestor"), var!("Z")),
+                ]
+            ),
+            // query!(I) :- academicAncestor("Robin Milner", I), academicAncestor(I, "Mistral Contrastin").
+            rule!(
+                query!("query1", vec![var!("Im")]),
+                vec![
+                    atom!(sym!("Robin Milner"), sym!("academicAncestor"), var!("Im")),
+                    atom!(
+                        var!("Im"),
+                        sym!("academicAncestor"),
+                        sym!("Mistral Contrastin")
+                    ),
+                ]
+            ),
+        ];
+
+        let solver = Solver::default();
+        let mut result = solver.solve(rules);
+        result.sort_unstable();
+        assert_eq!(
+            result,
+            vec![
+                academicAncestor!("Alan Mycroft", "Dominic Orchard").head,
+                academicAncestor!("Alan Mycroft", "Mistral Contrastin").head,
+                academicAncestor!("Andrew Rice", "Mistral Contrastin").head,
+                academicAncestor!("Andy Hopper", "Andrew Rice").head,
+                academicAncestor!("Andy Hopper", "Mistral Contrastin").head,
+                academicAncestor!("David Wheeler", "Andrew Rice").head,
+                academicAncestor!("David Wheeler", "Andy Hopper").head,
+                academicAncestor!("David Wheeler", "Mistral Contrastin").head,
+                academicAncestor!("Dominic Orchard", "Mistral Contrastin").head,
+                academicAncestor!("Robin Milner", "Alan Mycroft").head,
+                academicAncestor!("Robin Milner", "Dominic Orchard").head,
+                academicAncestor!("Robin Milner", "Mistral Contrastin").head,
+                academicAncestor!("Rod Burstall", "Alan Mycroft").head,
+                academicAncestor!("Rod Burstall", "Dominic Orchard").head,
+                academicAncestor!("Rod Burstall", "Mistral Contrastin").head,
+                adviser!("Alan Mycroft", "Dominic Orchard").head,
+                adviser!("Andrew Rice", "Mistral Contrastin").head,
+                adviser!("Andy Hopper", "Andrew Rice").head,
+                adviser!("David Wheeler", "Andy Hopper").head,
+                adviser!("Dominic Orchard", "Mistral Contrastin").head,
+                adviser!("Robin Milner", "Alan Mycroft").head,
+                adviser!("Rod Burstall", "Alan Mycroft").head,
+                query!("query1", vec![sym!("Alan Mycroft")]),
+                query!("query1", vec![sym!("Dominic Orchard")]),
             ]
         );
     }
