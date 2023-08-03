@@ -3,14 +3,11 @@ name = "pachadb-nanolog"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[[bin]]
-name = "nanolog"
-path = "src/repl.rs"
-
 [dependencies]
 lalrpop-util = { version = "0.20", features = ["lexer", "unicode"] }
-rustyline = "12.0.0"
+serde.workspace = true
+serde_derive.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 
 [build-dependencies]

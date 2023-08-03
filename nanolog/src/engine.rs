@@ -1,6 +1,7 @@
+use serde_derive::{Serialize, Deserialize};
 use std::collections::HashSet;
 
-#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Term {
     Var(String),
     Sym(String),
@@ -54,7 +55,7 @@ impl Substitution {
     }
 }
 
-#[derive(Clone, Hash, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Atom {
     pub relation: Term,
     pub args: Vec<Term>,
