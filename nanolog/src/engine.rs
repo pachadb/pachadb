@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Term {
     Var(String),
@@ -127,10 +126,10 @@ impl Atom {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Rule {
-    head: Atom,
-    body: Vec<Atom>,
+    pub head: Atom,
+    pub body: Vec<Atom>,
 }
 
 impl Rule {
@@ -144,7 +143,7 @@ impl Rule {
 }
 
 #[derive(Default, Debug, Clone)]
-struct Solver {}
+pub struct Solver;
 
 impl Solver {
     pub fn solve(&self, rules: Vec<Rule>) -> Vec<Atom> {
@@ -213,7 +212,7 @@ impl QueryPlanner {}
 impl std::fmt::Debug for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Term::Var(x) => write!(f, "?{}", x),
+            Term::Var(x) => write!(f, "{}", x),
             Term::Sym(s) => write!(f, "{}", s),
         }
     }
@@ -269,7 +268,7 @@ macro_rules! sym {
 #[macro_export]
 macro_rules! var {
     ($term:expr) => {
-        Term::Var($term.to_string())
+        Term::Var(format!("?{}", $term))
     };
 }
 
