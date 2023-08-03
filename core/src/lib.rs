@@ -39,6 +39,11 @@ pub struct UserFact {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QueryReq {
+    pub query: String
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StateFactsReq {
     pub facts: Vec<UserFact>,
 }

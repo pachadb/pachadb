@@ -9,16 +9,6 @@ kv_namespaces = [
     { binding = "pachadb-facts-store", id = "88c04e76bdb04ff78783cc5d850c86ac" }
 ]
 
-[[queues.consumers]]
-queue = "pachadb-facts"
-max_batch_size = 1
-max_batch_timeout = 0
-
-[[queues.consumers]]
-queue = "pachadb-entities"
-max_batch_size = 1
-max_batch_timeout = 0
-
 [build]
 command = "cargo install worker-build && worker-build --release"
 
