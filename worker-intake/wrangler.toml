@@ -10,8 +10,12 @@ kv_namespaces = [
 ]
 
 [[queues.producers]]
-queue = "pachadb-facts"
-binding = "pachadb-facts-queue"
+queue = "pachadb-facts-indexing"
+binding = "pachadb-facts-indexing-queue"
+
+[[queues.producers]]
+queue = "pachadb-facts-consolidation"
+binding = "pachadb-facts-consolidation-queue"
 
 [build]
 command = "cargo install worker-build && worker-build --release"

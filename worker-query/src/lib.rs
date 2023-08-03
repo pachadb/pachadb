@@ -1,7 +1,7 @@
 extern crate console_error_panic_hook;
 use log::*;
 use pachadb_core::*;
-use pachadb_nanolog::*;
+use pachadb_nanolog::{parser::Parser, engine::Solver};
 use std::panic;
 use worker::*;
 
@@ -23,8 +23,14 @@ async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Respons
     router
         .post_async("/", |mut req, ctx| async move {
             let query_req: QueryReq = req.json().await?;
-            info!("Executing {:?}", query_req);
-            Response::ok(query_req.query)
+
+						let query = Parser.parse(&query_req.query).unwrap();
+            info!("Executing {:?}", query);
+
+						let result = Solver.solve(query);
+            info!("Result {:?}", result);
+
+            Response::from_json(&result)
         })
         .run(req, env)
         .await

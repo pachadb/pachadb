@@ -2,10 +2,12 @@
 members = [
   "cli",
   "core",
+  "nanolog",
+  "nanolog-repl",
   "worker-consolidation",
+  "worker-indexing",
   "worker-intake",
   "worker-query",
-  "nanolog",
 ]
 resolver = "2"
 

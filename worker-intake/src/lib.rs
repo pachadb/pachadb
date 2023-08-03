@@ -75,8 +75,11 @@ async fn handle_fact(env: &Env, fact: UserFact) -> Result<Fact> {
         .execute()
         .await?;
 
-    let fact_queue = env.queue("pachadb-facts-queue")?;
-    fact_queue.send(&fact.id).await?;
+    let fact_indexing_queue = env.queue("pachadb-facts-indexing-queue")?;
+    fact_indexing_queue.send(&fact.id).await?;
+
+    let fact_consolidation_queue = env.queue("pachadb-facts-consolidation-queue")?;
+    fact_consolidation_queue.send(&fact.id).await?;
 
     Ok(fact)
 }

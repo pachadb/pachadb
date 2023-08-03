@@ -1190,12 +1190,39 @@ version = "0.1.0"
 dependencies = [
  "lalrpop",
  "lalrpop-util",
- "rustyline",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "thiserror",
 ]
 
 [[package]]
+name = "pachadb-nanolog-repl"
+version = "0.1.0"
+dependencies = [
+ "pachadb-nanolog",
+ "rustyline",
+]
+
+[[package]]
 name = "pachadb-worker-consolidation"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "console_error_panic_hook",
+ "futures",
+ "log",
+ "pachadb-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "uuid",
+ "wasm-logger",
+ "worker",
+]
+
+[[package]]
+name = "pachadb-worker-indexing"
 version = "0.1.0"
 dependencies = [
  "chrono",
