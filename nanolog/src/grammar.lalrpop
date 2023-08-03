@@ -3,9 +3,16 @@ use crate::ast::*;
 grammar;
 
 pub Expr: Expr = {
+    <l:List> => Expr::List(l),
     <s:Symbol> => Expr::Symbol(s),
     <v:Variable> => Expr::Variable(v),
 };
 
-Symbol: String = <s:r"[a-zA-Z:\-\/._0-9]+"> => s.to_string();
+List: Vec<Expr> = "(" <parts:(<Expr>)*> ")" => parts;
+
+Symbol: String = {
+    <r#""[^"]*""#> => <>[1..<>.len() - 1].to_string(),
+    <s:r"[a-zA-Z:\-\/._0-9]+"> => s.to_string()
+};
+
 Variable: String = <s:r"\?[a-zA-Z0-9]+"> => s.to_string();
