@@ -1,0 +1,11 @@
+use crate::ast::*;
+
+grammar;
+
+pub Expr: Expr = {
+    <s:Symbol> => Expr::Symbol(s),
+    <v:Variable> => Expr::Variable(v),
+};
+
+Symbol: String = <s:r"[a-zA-Z:\-\/._0-9]+"> => s.to_string();
+Variable: String = <s:r"\?[a-zA-Z0-9]+"> => s.to_string();
