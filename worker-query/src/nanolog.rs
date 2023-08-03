@@ -62,9 +62,7 @@ pub struct Atom {
 
 impl Atom {
     pub fn unify(&self, other: &Atom) -> Option<Substitution> {
-        println!("unify {:?} {:?}", self, other);
         if self.relation == other.relation && self.args.len() == other.args.len() {
-            println!("unify {:?} {:?}", self.args, other.args);
             self.do_unify(self.args.iter().zip(other.args.iter()))
         } else {
             None
@@ -76,13 +74,11 @@ impl Atom {
         mut iter: impl Iterator<Item = (&'a Term, &'a Term)>,
     ) -> Option<Substitution> {
         let next = iter.next();
-        println!("next {:?}", &next);
         let Some((a, b)) = next else { return Some(Substitution::default()) };
 
         match (a, b) {
             // we have values on both sides, they must match
             (Term::Sym(a), Term::Sym(b)) => {
-                println!("sym {:?} == syn {:?} => {}", a, b, a == b);
                 if a == b {
                     self.do_unify(iter)
                 } else {
@@ -92,11 +88,8 @@ impl Atom {
 
             // we have a variable that is unified to a symbol
             (v @ Term::Var(_), s1 @ Term::Sym(_)) => {
-                println!("var {:?} == syn {:?}", v, s1);
                 let inc_sub = self.do_unify(iter)?;
                 let find = inc_sub.find(v);
-                println!("inc_sub {:?}", inc_sub);
-                println!("find {:?}", find);
                 match find {
                     Some(s2) if *s1 != s2 => None,
                     _ => Some(inc_sub.prepend(v.clone(), s1.clone())),
@@ -173,7 +166,6 @@ impl Solver {
 
         for rule in rules {
             let new_facts = self.eval_rule(rule, kb);
-            println!("new_knowledge {:#?}", &new_facts);
             new_kb.extend(new_facts);
         }
 
@@ -181,16 +173,12 @@ impl Solver {
     }
 
     pub fn eval_rule(&self, rule: &Rule, kb: &HashSet<Atom>) -> Vec<Atom> {
-        println!("eval_rule {:?}", &rule);
-
         let walked_body = rule
             .body
             .iter()
             .rfold(vec![Substitution::default()], |subs, atom| {
                 self.eval_atom(kb, subs, atom)
             });
-
-        println!("walked_body {:?}", &walked_body);
 
         walked_body
             .iter()
@@ -208,30 +196,10 @@ impl Solver {
             .flat_map(|sub| {
                 let lowered_atom = atom.clone().substitute(sub);
 
-                println!(
-                    "eval_atom {:?} {:?} {:?} {:#?}",
-                    &atom, &sub, &lowered_atom, &kb
-                );
-
-                let exts = kb
-                    .iter()
-                    .filter_map(|kb_atom| {
-                        let unif = lowered_atom.unify(kb_atom);
-                        println!(
-                            "unif {} {:?} {:?} {:?}",
-                            lowered_atom == *kb_atom,
-                            lowered_atom,
-                            kb_atom,
-                            unif
-                        );
-                        unif
-                    })
+                kb.iter()
+                    .filter_map(|kb_atom| lowered_atom.unify(kb_atom))
                     .map(|sub2| sub.clone().concat(sub2))
-                    .collect::<Vec<Substitution>>();
-
-                println!("extensions {:#?}", &exts);
-
-                exts
+                    .collect::<Vec<Substitution>>()
             })
             .collect()
     }
