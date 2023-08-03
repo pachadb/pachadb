@@ -145,9 +145,10 @@ impl Entity {
     }
 }
 
+use gloo_utils::format::JsValueSerdeExt;
 #[wasm_bindgen]
-pub fn consolidate(obj : JsValue) -> Result<Vec<JsValue>, JsValue> {
-    let facts: Vec<Fact> = serde_wasm_bindgen::from_value(obj)?;
+pub fn consolidate(obj : JsValue) -> Result<(), JsValue> {
+    let facts: Vec<Fact> = obj.into_serde().map_err(|err| err.to_string())?;
 
     let facts_by_entity = facts.into_iter().fold(HashMap::new(), |mut map, fact| {
         map.entry(fact.entity.clone())
@@ -156,16 +157,12 @@ pub fn consolidate(obj : JsValue) -> Result<Vec<JsValue>, JsValue> {
         map
     });
 
-    let serializer = serde_wasm_bindgen::Serializer::json_compatible();
-
-    let mut entities = vec![];
     for (entity_uri, facts) in facts_by_entity {
         let mut entity: Entity = Entity::new(entity_uri.clone());
         for fact in facts {
             entity.consolidate(fact);
         }
-        entities.push(entity.fields.serialize(&serializer)?);
     }
 
-    Ok(entities)
+    Ok(())
 }

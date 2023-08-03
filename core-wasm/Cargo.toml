@@ -12,7 +12,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 pachadb-core = { path = "../core", version = "*" }
-wasm-bindgen = "0.2.84"
+wasm-bindgen = "0.2.86"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -24,6 +24,8 @@ serde = {workspace = true, features = ["derive"] }
 serde-wasm-bindgen = "0.5.0"
 chrono.workspace = true
 serde_derive.workspace = true
+gloo-utils = { version = "0.1.7", features =[ "serde" ] }
+tsify = "0.4.5"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
