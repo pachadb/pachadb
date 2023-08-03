@@ -2,9 +2,10 @@
 members = [
   "cli",
   "core",
-  "core-wasm",
   "worker-consolidation",
   "worker-intake",
+  "worker-query",
+  "nanolog",
 ]
 resolver = "2"
 
@@ -14,22 +15,25 @@ lto = true
 
 [workspace.dependencies]
 anyhow = "1"
+chrono = "0.4"
+datafrog = "2.0.1"
+env_logger = "0.10.0"
+futures = "0.3.28"
+human-panic = "1.1.5"
+log = "0.4.19"
+reqwest = { version = "0.11", features = ["json", "gzip", "brotli"] }
 serde = { version = "1.0", features = ["rc"] }
 serde_derive = "1.0"
 serde_json = { version = "1.0", features = ["preserve_order"] }
 sha2 = "0.10"
 structopt = "0.3"
 thiserror = "1.0"
-url = "2"
-uuid = { version = "1.4", features = ["v4", "v7", "js", "fast-rng", "macro-diagnostics"] }
-worker = "0.0.17"
-whoami = "1.4"
-tracing = { version = "0.1", features = ["log"] }
-env_logger = "0.10.0"
-human-panic = "1.1.5"
 tokio = { version = "1", features = ["full"] }
 tokio-serde = "0.8"
 tokio-util = { version = "0.7", features = ["rt", "compat"] }
-reqwest = { version = "0.11", features = ["json", "gzip", "brotli"] }
-chrono = "0.4"
-
+tracing = { version = "0.1", features = ["log"] }
+url = "2"
+uuid = { version = "1.4", features = ["v4", "v7", "js", "fast-rng", "macro-diagnostics"] }
+wasm-logger = "0.2.0"
+whoami = "1.4"
+worker = { version = "0.0.17", features = [ "queue" ] }

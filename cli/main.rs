@@ -40,6 +40,7 @@ impl Pacha {
 enum Command {
     State(StateCommand),
     Get(GetCommand),
+    Query(QueryCommand),
 }
 
 impl Command {
@@ -47,6 +48,7 @@ impl Command {
         match self {
             Command::State(x) => x.run().await,
             Command::Get(x) => x.run().await,
+            Command::Query(x) => x.run().await,
         }
     }
 }
