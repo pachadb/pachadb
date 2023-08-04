@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::{ast::*, atom};
 use crate::engine::{Atom, Rule, Term};
 use lalrpop_util::lalrpop_mod;
 use thiserror::*;
@@ -9,42 +9,31 @@ lalrpop_mod!(grammar);
 pub struct Parser;
 
 impl Parser {
-    pub fn parse(&self, str: &str) -> Result<Vec<Rule>, ParseError> {
+    pub fn parse(&self, str: &str) -> Result<Rule, ParseError> {
         let ast = grammar::ExprParser::new()
             .parse(str)
             .map_err(|err| ParseError::Grammar(err.to_string()))?;
 
         let Expr::List(ast) = ast else { return ParseError::unsupported("top-level query must be a list!"); };
 
-        let mut rules = vec![];
-
-        let mut curr = vec![];
-        for expr in ast {
-            curr.push(expr);
-            if curr.len() == 3 {
-                rules.push(self.build_rule(curr)?);
-                break;
-            }
-        }
-
-        Ok(rules)
-    }
-
-    fn build_rule(&self, curr: Vec<Expr>) -> Result<Rule, ParseError> {
-        let entity = self.expr_to_term(curr.get(0).unwrap());
-        let field = self.expr_to_term(curr.get(1).unwrap());
-        let value = self.expr_to_term(curr.get(2).unwrap());
-
-        // find all the variables
         let mut args = vec![];
-        if entity.is_var() {
-            args.push(entity.clone());
-        }
-        if field.is_var() {
-            args.push(field.clone());
-        }
-        if value.is_var() {
-            args.push(value.clone());
+        let mut body = vec![];
+
+        for chunk in ast.chunks(3) {
+            let entity = self.expr_to_term(&chunk[0]);
+            let field = self.expr_to_term(&chunk[1]);
+            let value = self.expr_to_term(&chunk[2]);
+
+            if entity.is_var() {
+                args.push(entity.clone());
+            }
+            if field.is_var() {
+                args.push(field.clone());
+            }
+            if value.is_var() {
+                args.push(value.clone());
+            }
+            body.push(atom!(entity, field, value));
         }
 
         // make them part of our query
@@ -52,12 +41,6 @@ impl Parser {
             relation: Term::Sym("query0".to_string()),
             args,
         };
-
-        // include all the predicates in the body
-        let body = vec![Atom {
-            relation: field,
-            args: vec![entity, value],
-        }];
 
         Ok(Rule { head, body })
     }
@@ -81,7 +64,7 @@ pub enum ParseError {
 }
 
 impl ParseError {
-    fn unsupported(str: &str) -> Result<Vec<Rule>, ParseError> {
+    fn unsupported(str: &str) -> Result<Rule, ParseError> {
         Err(Self::Unsupported(str.to_string()))
     }
 }
@@ -145,13 +128,32 @@ mod tests {
     }
 
     #[test]
-    fn parse_rules() {
+    fn parse_simple_rules() {
         assert_eq!(
             Parser.parse(r#"( ?who likes Metallica )"#).unwrap(),
-            vec![rule!(
-                query!("query0", vec![var!("?who")]),
-                vec![atom!(var!("?who"), sym!("likes"), sym!("Metallica")),]
-            )]
+            rule!(
+                query!("query0", vec![var!("who")]),
+                vec![atom!(var!("who"), sym!("likes"), sym!("Metallica")),]
+            )
+        );
+    }
+
+    #[test]
+    fn parse_complex_rules() {
+        assert_eq!(
+            Parser.parse(
+                r#"( ?who likes ?what
+                     ?what is-a band
+                     ?what playsGenre "Heavy Metal" )"#
+            ).unwrap(),
+            rule!(
+                query!("query0", vec![var!("who"), var!("what"), var!("what"), var!("what")]),
+                vec![
+                atom!(var!("who"), sym!("likes"), var!("what")),
+                atom!(var!("what"), sym!("is-a"), sym!("band")),
+                atom!(var!("what"), sym!("playsGenre"), sym!("Heavy Metal")),
+                ]
+            )
         );
     }
 }

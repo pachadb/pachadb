@@ -19,8 +19,7 @@ fn main() -> Result<()> {
             Ok(line) if line.is_empty() => print!(""),
             Ok(line) => {
                 rl.add_history_entry(line.as_str())?;
-                let query = Parser.parse(&line).unwrap();
-                let rule = query.into_iter().take(1).next().unwrap();
+                let rule = Parser.parse(&line).unwrap();
 
                 let is_fact = rule.head.args.is_empty();
 
