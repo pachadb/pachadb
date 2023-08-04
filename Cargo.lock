@@ -1162,6 +1162,7 @@ dependencies = [
  "env_logger",
  "human-panic",
  "pachadb-core",
+ "pachadb-nanolog",
  "reqwest",
  "serde",
  "serde_derive",

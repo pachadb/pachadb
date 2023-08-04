@@ -1,5 +1,6 @@
 use crate::flags::Flags;
 use anyhow::*;
+use pachadb_nanolog::engine::{Atom, Term};
 use reqwest::Method;
 use structopt::StructOpt;
 
@@ -30,7 +31,17 @@ impl QueryCommand {
 
         let res = client.request(Method::POST, self.host).body(json).send().await?;
 
-        println!("{}", res.text().await?);
+        let atoms: Vec<Atom> = res.json().await?;
+
+        let query0 = "query0".to_string();
+        for atom in atoms {
+            match &atom.relation {
+                Term::Sym(s) if *s == query0 => {
+                    println!("{:?}", &atom);
+                }
+                _ => ()
+            }
+        }
 
         Ok(())
     }
