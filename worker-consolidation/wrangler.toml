@@ -10,7 +10,7 @@ kv_namespaces = [
 ]
 
 [[queues.consumers]]
-queue = "pachadb-facts"
+queue = "pachadb-facts-consolidation"
 max_batch_size = 1
 max_batch_timeout = 0
 
