@@ -1,5 +1,5 @@
-use crate::{ast::*, atom};
 use crate::engine::{Atom, Rule, Term};
+use crate::{ast::*, atom};
 use lalrpop_util::lalrpop_mod;
 use thiserror::*;
 
@@ -141,17 +141,22 @@ mod tests {
     #[test]
     fn parse_complex_rules() {
         assert_eq!(
-            Parser.parse(
-                r#"( ?who likes ?what
+            Parser
+                .parse(
+                    r#"( ?who likes ?what
                      ?what is-a band
                      ?what playsGenre "Heavy Metal" )"#
-            ).unwrap(),
+                )
+                .unwrap(),
             rule!(
-                query!("query0", vec![var!("who"), var!("what"), var!("what"), var!("what")]),
+                query!(
+                    "query0",
+                    vec![var!("who"), var!("what"), var!("what"), var!("what")]
+                ),
                 vec![
-                atom!(var!("who"), sym!("likes"), var!("what")),
-                atom!(var!("what"), sym!("is-a"), sym!("band")),
-                atom!(var!("what"), sym!("playsGenre"), sym!("Heavy Metal")),
+                    atom!(var!("who"), sym!("likes"), var!("what")),
+                    atom!(var!("what"), sym!("is-a"), sym!("band")),
+                    atom!(var!("what"), sym!("playsGenre"), sym!("Heavy Metal")),
                 ]
             )
         );

@@ -25,7 +25,10 @@ fn main() -> Result<()> {
 
                 if is_fact {
                     for fact in &rule.body {
-                        facts.push(Rule { head: fact.clone(), body: vec![] });
+                        facts.push(Rule {
+                            head: fact.clone(),
+                            body: vec![],
+                        });
                         println!("<: {:?}", &fact);
                     }
                 } else {
@@ -37,22 +40,22 @@ fn main() -> Result<()> {
                             Term::Sym(s) if *s == query0 => {
                                 println!("<: {:?}", &atom);
                             }
-                            _ => ()
+                            _ => (),
                         }
                     }
                 }
-            },
+            }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
-                break
-            },
+                break;
+            }
             Err(ReadlineError::Eof) => {
                 println!("CTRL-D");
-                break
-            },
+                break;
+            }
             Err(err) => {
                 println!("Error: {:?}", err);
-                break
+                break;
             }
         }
     }

@@ -8,7 +8,7 @@ use thiserror::*;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("unknown error")]
-    Unknown
+    Unknown,
 }
 
 pub type PachaResult<V> = std::result::Result<V, Error>;
@@ -40,7 +40,7 @@ pub struct UserFact {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryReq {
-    pub query: String
+    pub query: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -102,13 +102,14 @@ pub trait FactStore: Default {
     fn get(&mut self, uri: Uri) -> PachaResult<Option<Fact>>;
 }
 
-
 #[derive(Debug, Default)]
 pub struct PachaDb<EntityStore, FactStore> {
     entity_store: EntityStore,
     fact_store: FactStore,
 }
 
-impl<ES: EntityStore, FS: FactStore>  PachaDb<ES, FS> {
-    pub fn new() -> Self { Default::default() }
+impl<ES: EntityStore, FS: FactStore> PachaDb<ES, FS> {
+    pub fn new() -> Self {
+        Default::default()
+    }
 }

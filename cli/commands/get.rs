@@ -10,7 +10,10 @@ use structopt::StructOpt;
     about = "gets an entity"
 )]
 pub struct GetCommand {
-    #[structopt(short = "h", default_value = "https://pachadb-worker.abstractmachines.workers.dev")]
+    #[structopt(
+        short = "h",
+        default_value = "https://pachadb-worker.abstractmachines.workers.dev"
+    )]
     host: reqwest::Url,
     #[structopt(short = "u")]
     uri: String,
@@ -22,7 +25,10 @@ impl GetCommand {
     pub async fn run(self) -> Result<(), anyhow::Error> {
         let client = reqwest::Client::builder().gzip(true).brotli(true).build()?;
 
-        let res = client.request(Method::GET, format!("{}{}",self.host, self.uri)).send().await?;
+        let res = client
+            .request(Method::GET, format!("{}{}", self.host, self.uri))
+            .send()
+            .await?;
         println!("{}", res.text().await?);
 
         Ok(())

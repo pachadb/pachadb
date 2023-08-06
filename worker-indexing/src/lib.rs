@@ -22,7 +22,7 @@ async fn main(batch: MessageBatch<Uri>, env: Env, _ctx: Context) -> Result<()> {
     let index_by_value = env.kv("pachadb-facts-index-by-value")?;
 
     for fact in facts {
-				info!("Indexing fact: {:#?}", &fact);
+        info!("Indexing fact: {:#?}", &fact);
         let json_fact = serde_json::to_string(&fact)?;
 
         index_by_entity
@@ -55,10 +55,7 @@ async fn main(batch: MessageBatch<Uri>, env: Env, _ctx: Context) -> Result<()> {
             .await?;
 
         index_by_value
-            .put(
-                &format!("{}/{}", fact.value, fact.id.0),
-                json_fact.clone(),
-            )?
+            .put(&format!("{}/{}", fact.value, fact.id.0), json_fact.clone())?
             .execute()
             .await?;
     }

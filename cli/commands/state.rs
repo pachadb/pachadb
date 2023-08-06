@@ -11,7 +11,10 @@ use structopt::StructOpt;
     about = "states a fact"
 )]
 pub struct StateCommand {
-    #[structopt(short = "h", default_value = "https://pachadb-worker.abstractmachines.workers.dev")]
+    #[structopt(
+        short = "h",
+        default_value = "https://pachadb-worker.abstractmachines.workers.dev"
+    )]
     host: reqwest::Url,
     #[structopt(short = "e")]
     entity: String,

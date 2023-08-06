@@ -51,7 +51,7 @@ async fn fetch_entity_or_fact(env: &Env, uri: &str) -> Result<Option<String>> {
     } else {
         let fact: Option<Fact> = fact_bucket.get(uri).json().await?;
         if let Some(fact) = fact {
-        Ok(Some(serde_json::to_string(&fact)?))
+            Ok(Some(serde_json::to_string(&fact)?))
         } else {
             Ok(None)
         }

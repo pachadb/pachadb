@@ -21,15 +21,17 @@ pub struct QueryCommand {
 
 impl QueryCommand {
     pub async fn run(self) -> Result<(), anyhow::Error> {
-        let query_req = pachadb_core::QueryReq {
-            query: self.query
-        };
+        let query_req = pachadb_core::QueryReq { query: self.query };
 
         let client = reqwest::Client::builder().gzip(true).brotli(true).build()?;
 
         let json = serde_json::to_string_pretty(&query_req)?;
 
-        let res = client.request(Method::POST, self.host).body(json).send().await?;
+        let res = client
+            .request(Method::POST, self.host)
+            .body(json)
+            .send()
+            .await?;
 
         let atoms: Vec<Atom> = res.json().await?;
 
@@ -39,7 +41,7 @@ impl QueryCommand {
                 Term::Sym(s) if *s == query0 => {
                     println!("{:?}", &atom);
                 }
-                _ => ()
+                _ => (),
             }
         }
 
