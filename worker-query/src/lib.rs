@@ -163,8 +163,7 @@ impl Scanner {
         for key in iter.keys {
             info!("Fetching fact {}", &key.name);
 
-            // TODO(@ostera): optimize by keeping tx_id in the name
-            let fact_tx_id: u64 = key.name.split("/").into_iter().last().unwrap().parse().unwrap();
+            let fact_tx_id: u64 = key.name.split('/').last().unwrap().parse().unwrap();
 						let fact_tx_id = TxId(fact_tx_id);
 
 						if fact_tx_id <= max_tx {
