@@ -5,7 +5,7 @@ compatibility_date = "2023-07-24"
 usage_model = "bundled"
 
 kv_namespaces = [
-	{ binding = "pachadb-entities-store", id = "1ee0610ec05b4240bd7891b1789056e8" },
+	{ binding = "pachadb-entities-store", id = "f65a15f705814e5eb00202ef19ed27ca" },
 	{ binding = "pachadb-facts-index-by-entity", id = "f2780bd63f1a4c81be67a8f75fe52d22" },
 	{ binding = "pachadb-facts-index-by-entity-field", id = "df3df3088fe64c9b8f2c616f312dbd09" },
 	{ binding = "pachadb-facts-index-by-field", id = "5780f94195774bdfa5519f76c951999d" },

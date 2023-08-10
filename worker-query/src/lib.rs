@@ -27,6 +27,18 @@ async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Respons
         .post_async("/", |mut req, ctx| async move {
             let query_req: QueryReq = req.json().await?;
 
+            // NOTE(@ostera): helps ensure read-your-writes by forcing replication of facts
+            let tx_bucket = ctx.env.kv("pachadb-tx-store")?;
+            let mut forced_fact_ids = vec![];
+            for tx_id in 0..query_req.tx_id.0 {
+                let tx = tx_bucket
+                    .get(&tx_id.to_string())
+                    .json::<Transaction>()
+                    .await?
+                    .ok_or(worker::Error::RustError(format!("missing transaction {}", tx_id)))?;
+                forced_fact_ids.extend(tx.fact_ids);
+            }
+
             let query = Parser.parse(&query_req.query).unwrap();
             info!("Executing {:?}", query);
 
@@ -77,7 +89,7 @@ async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Respons
 
                 let mut facts = vec![];
                 for scan in scans {
-                    facts.extend(scanner.fetch(scan).await?);
+                    facts.extend(scanner.fetch(scan, &forced_fact_ids, query_req.tx_id).await?);
                 }
                 facts
             };
@@ -111,7 +123,7 @@ pub struct Scanner {
 }
 
 impl Scanner {
-    pub async fn fetch(&self, scan: Scan) -> Result<Vec<Rule>> {
+    pub async fn fetch(&self, scan: Scan, facts: &[Uri], max_tx: TxId) -> Result<Vec<Rule>> {
         let (kv, prefix) = match scan {
             Scan::Entity(prefix) => {
                 info!("Scanning index_by_entity");
@@ -140,17 +152,29 @@ impl Scanner {
         };
         info!("Using prefix {}", &prefix);
 
+        // NOTE(@ostera): enforce all transaction facts are available
+        for fact_id in facts {
+            kv.get(&fact_id.0).bytes().await?;
+        }
+
         let iter = kv.list().prefix(prefix).execute().await?;
 
         let mut rules = vec![];
         for key in iter.keys {
             info!("Fetching fact {}", &key.name);
-            let fact: Fact = kv.get(&key.name).json().await?.unwrap();
-            let rule = rule!(
-                atom!(sym!(fact.entity.0), sym!(fact.field.0), sym!(fact.value)),
-                vec![]
-            );
-            rules.push(rule);
+
+            // TODO(@ostera): optimize by keeping tx_id in the name
+            let fact_tx_id: u64 = key.name.split("/").into_iter().last().unwrap().parse().unwrap();
+						let fact_tx_id = TxId(fact_tx_id);
+
+						if fact_tx_id <= max_tx {
+							let fact: Fact = kv.get(&key.name).json().await?.unwrap();
+							let rule = rule!(
+								atom!(sym!(fact.entity.0), sym!(fact.field.0), sym!(fact.value)),
+								vec![]
+							);
+							rules.push(rule);
+						}
         }
 
         Ok(rules)

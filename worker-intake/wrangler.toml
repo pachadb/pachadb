@@ -5,8 +5,19 @@ compatibility_date = "2023-07-24"
 usage_model = "bundled"
 
 kv_namespaces = [
-    { binding = "pachadb-entities-store", id = "1ee0610ec05b4240bd7891b1789056e8" },
-    { binding = "pachadb-facts-store", id = "88c04e76bdb04ff78783cc5d850c86ac" }
+	{ binding = "pachadb-entities-store", id = "f65a15f705814e5eb00202ef19ed27ca" },
+	{ binding = "pachadb-facts-index-by-entity", id = "f2780bd63f1a4c81be67a8f75fe52d22" },
+	{ binding = "pachadb-facts-index-by-entity-field", id = "df3df3088fe64c9b8f2c616f312dbd09" },
+	{ binding = "pachadb-facts-index-by-field", id = "5780f94195774bdfa5519f76c951999d" },
+	{ binding = "pachadb-facts-index-by-field-value", id = "be25916199f54ca698d26fcc1e543306" },
+	{ binding = "pachadb-facts-index-by-value", id = "5f2051b170984d979a7da8580d9cd83f" },
+	{ binding = "pachadb-facts-store", id = "88c04e76bdb04ff78783cc5d850c86ac" },
+	{ binding = "pachadb-tx-store", id = "4efeddcbd90b4d3aa9e76b9efb01867c" },
+]
+
+[durable_objects]
+bindings = [
+	{ name = "PACHADB_TX_MANAGER", class_name = "TxManager" }
 ]
 
 [[queues.producers]]
@@ -20,3 +31,6 @@ binding = "pachadb-facts-consolidation-queue"
 [build]
 command = "cargo install worker-build && worker-build --release"
 
+[[migrations]]
+tag = "v1"
+new_classes = ["TxManager"]

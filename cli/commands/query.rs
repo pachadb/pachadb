@@ -1,5 +1,6 @@
 use crate::flags::Flags;
 use anyhow::*;
+use pachadb_core::TxId;
 use pachadb_nanolog::engine::{Atom, Term};
 use reqwest::Method;
 use structopt::StructOpt;
@@ -13,6 +14,8 @@ use structopt::StructOpt;
 pub struct QueryCommand {
     #[structopt(short = "h", default_value = "https://query.api.pachadb.com")]
     host: reqwest::Url,
+    #[structopt(short = "tx")]
+    tx_id: u64,
     #[structopt(short = "q")]
     query: String,
     #[structopt(flatten)]
@@ -21,7 +24,10 @@ pub struct QueryCommand {
 
 impl QueryCommand {
     pub async fn run(self) -> Result<(), anyhow::Error> {
-        let query_req = pachadb_core::QueryReq { query: self.query };
+        let query_req = pachadb_core::QueryReq {
+            tx_id: TxId(self.tx_id),
+            query: self.query,
+        };
 
         let client = reqwest::Client::builder().gzip(true).brotli(true).build()?;
 

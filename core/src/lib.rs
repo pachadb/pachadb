@@ -17,8 +17,25 @@ pub type PachaResult<V> = std::result::Result<V, Error>;
 #[serde(transparent)]
 pub struct Uri(pub String);
 
+#[derive(Default, Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct TxId(pub u64);
+
+impl TxId {
+    pub fn next(&self) -> Self {
+        Self(self.0 + 1)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Transaction {
+    pub tx_id: TxId,
+    pub fact_ids: Vec<Uri>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fact {
+    pub tx_id: TxId,
     pub id: Uri,
     pub entity: Uri,
     pub field: Uri,
@@ -41,6 +58,7 @@ pub struct UserFact {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryReq {
     pub query: String,
+    pub tx_id: TxId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
