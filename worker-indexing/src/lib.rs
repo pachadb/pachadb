@@ -26,13 +26,19 @@ async fn main(batch: MessageBatch<Uri>, env: Env, _ctx: Context) -> Result<()> {
         let json_fact = serde_json::to_string(&fact)?;
 
         index_by_entity
-            .put(&format!("{}/{}", fact.entity.0, fact.tx_id.0), json_fact.clone())?
+            .put(
+                &format!("{}/{}", fact.entity.0, fact.tx_id.0),
+                json_fact.clone(),
+            )?
             .execute()
             .await?;
 
         index_by_entity_field
             .put(
-                &format!("{}/{}/{}/{}", fact.entity.0, fact.field.0, fact.id.0, fact.tx_id.0),
+                &format!(
+                    "{}/{}/{}/{}",
+                    fact.entity.0, fact.field.0, fact.id.0, fact.tx_id.0
+                ),
                 json_fact.clone(),
             )?
             .execute()
@@ -48,14 +54,20 @@ async fn main(batch: MessageBatch<Uri>, env: Env, _ctx: Context) -> Result<()> {
 
         index_by_field_value
             .put(
-                &format!("{}/{}/{}/{}", fact.field.0, fact.value, fact.id.0, fact.tx_id.0),
+                &format!(
+                    "{}/{}/{}/{}",
+                    fact.field.0, fact.value, fact.id.0, fact.tx_id.0
+                ),
                 json_fact.clone(),
             )?
             .execute()
             .await?;
 
         index_by_value
-            .put(&format!("{}/{}/{}", fact.value, fact.id.0, fact.tx_id.0), json_fact.clone())?
+            .put(
+                &format!("{}/{}/{}", fact.value, fact.id.0, fact.tx_id.0),
+                json_fact.clone(),
+            )?
             .execute()
             .await?;
     }

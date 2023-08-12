@@ -35,7 +35,13 @@ tokio-serde = "0.8"
 tokio-util = { version = "0.7", features = ["rt", "compat"] }
 tracing = { version = "0.1", features = ["log"] }
 url = "2"
-uuid = { version = "1.4", features = ["v4", "v7", "js", "fast-rng", "macro-diagnostics"] }
+uuid = { version = "1.4", features = [
+  "v4",
+  "v7",
+  "js",
+  "fast-rng",
+  "macro-diagnostics",
+] }
 wasm-logger = "0.2.0"
 whoami = "1.4"
-worker = { version = "0.0.17", features = [ "queue" ] }
+worker = { version = "0.0.17", features = ["queue"] }

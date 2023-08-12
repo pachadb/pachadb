@@ -1,7 +1,7 @@
 extern crate console_error_panic_hook;
 use log::*;
 use pachadb_core::*;
-use serde::{Deserialize, Serialize};
+
 use std::panic;
 use worker::*;
 
@@ -18,7 +18,7 @@ impl DurableObject for TxManager {
     }
 
     async fn fetch(&mut self, req: Request) -> Result<Response> {
-        let router = Router::new();
+        let _router = Router::new();
 
         let mut storage = self.state.storage();
         match req.path().as_str() {

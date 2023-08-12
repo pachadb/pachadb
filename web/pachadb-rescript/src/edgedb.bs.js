@@ -9,31 +9,31 @@ function $$new(ns) {
 }
 
 var Uri = {
-  $$new: $$new
+  $$new: $$new,
 };
 
 var cmp = Caml_obj.compare;
 
 var Uri_comparable = Belt_Id.MakeComparable({
-      cmp: cmp
-    });
+  cmp: cmp,
+});
 
 function now(param) {
   return Date.now();
 }
 
 var DateTime = {
-  now: now
+  now: now,
 };
 
 function string(x) {
-  return /* String */{
-          _0: x
-        };
+  return /* String */ {
+    _0: x,
+  };
 }
 
 var Value = {
-  string: string
+  string: string,
 };
 
 var Fact = {};
@@ -45,14 +45,14 @@ function $$new$1(param) {
 }
 
 var EntityTable = {
-  $$new: $$new$1
+  $$new: $$new$1,
 };
 
 function $$new$2(param) {
   return {
-          facts: [],
-          entities: Belt_Map.make(Uri_comparable)
-        };
+    facts: [],
+    entities: Belt_Map.make(Uri_comparable),
+  };
 }
 
 function state(db, fact) {
@@ -62,17 +62,8 @@ function state(db, fact) {
 
 var DB = {
   $$new: $$new$2,
-  state: state
+  state: state,
 };
 
-export {
-  Uri ,
-  Uri_comparable ,
-  DateTime ,
-  Value ,
-  Fact ,
-  Entity ,
-  EntityTable ,
-  DB ,
-}
+export { DateTime, DB, Entity, EntityTable, Fact, Uri, Uri_comparable, Value };
 /* Uri_comparable Not a pure module */

@@ -371,7 +371,7 @@ mod tests {
 
     #[test]
     fn solver_evaluates_simple_rules() {
-        let solver = Solver::default();
+        let solver = Solver;
         let kb = vec![
             atom!(sym!("1"), sym!("lessThan"), sym!("2")),
             atom!(sym!("2"), sym!("lessThan"), sym!("3")),
@@ -399,7 +399,7 @@ mod tests {
     }
 
     fn solver_evaluates_recursive_rule() {
-        let solver = Solver::default();
+        let solver = Solver;
 
         let kb = vec![
             atom!(sym!("1"), sym!("lessThan"), sym!("2")),
@@ -468,7 +468,7 @@ mod tests {
             ),
         ];
 
-        let solver = Solver::default();
+        let solver = Solver;
         let mut result = solver.solve(rules);
         result.sort_unstable();
         assert_eq!(
@@ -517,7 +517,7 @@ mod tests {
             ),
         ];
 
-        let solver = Solver::default();
+        let solver = Solver;
         let mut result = solver.solve(rules);
         result.sort_unstable();
         assert_eq!(
@@ -586,7 +586,7 @@ mod tests {
             ),
         ];
 
-        let solver = Solver::default();
+        let solver = Solver;
         let mut result = solver.solve(rules);
         result.sort_unstable();
         assert_eq!(

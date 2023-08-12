@@ -1,5 +1,6 @@
+use crate::ast::*;
+use crate::atom;
 use crate::engine::{Atom, Rule, Term};
-use crate::{ast::*, atom};
 use lalrpop_util::lalrpop_mod;
 use thiserror::*;
 

@@ -1,15 +1,15 @@
 extern crate console_error_panic_hook;
 use log::*;
 use pachadb_core::*;
+use pachadb_nanolog::engine::*;
 use pachadb_nanolog::parser::Parser;
-use pachadb_nanolog::{atom, rule};
-use pachadb_nanolog::{engine::*, sym};
+use pachadb_nanolog::{atom, rule, sym};
 use std::panic;
 use worker::kv::KvStore;
 use worker::*;
 
 #[event(queue)]
-async fn handle_event(batch: MessageBatch<Uri>, env: Env, _ctx: Context) -> Result<()> {
+async fn handle_event(_batch: MessageBatch<Uri>, _env: Env, _ctx: Context) -> Result<()> {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
     wasm_logger::init(wasm_logger::Config::default());
 
@@ -35,7 +35,10 @@ async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Respons
                     .get(&tx_id.to_string())
                     .json::<Transaction>()
                     .await?
-                    .ok_or(worker::Error::RustError(format!("missing transaction {}", tx_id)))?;
+                    .ok_or(worker::Error::RustError(format!(
+                        "missing transaction {}",
+                        tx_id
+                    )))?;
                 forced_fact_ids.extend(tx.fact_ids);
             }
 
@@ -89,7 +92,11 @@ async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Respons
 
                 let mut facts = vec![];
                 for scan in scans {
-                    facts.extend(scanner.fetch(scan, &forced_fact_ids, query_req.tx_id).await?);
+                    facts.extend(
+                        scanner
+                            .fetch(scan, &forced_fact_ids, query_req.tx_id)
+                            .await?,
+                    );
                 }
                 facts
             };
@@ -164,16 +171,16 @@ impl Scanner {
             info!("Fetching fact {}", &key.name);
 
             let fact_tx_id: u64 = key.name.split('/').last().unwrap().parse().unwrap();
-						let fact_tx_id = TxId(fact_tx_id);
+            let fact_tx_id = TxId(fact_tx_id);
 
-						if fact_tx_id <= max_tx {
-							let fact: Fact = kv.get(&key.name).json().await?.unwrap();
-							let rule = rule!(
-								atom!(sym!(fact.entity.0), sym!(fact.field.0), sym!(fact.value)),
-								vec![]
-							);
-							rules.push(rule);
-						}
+            if fact_tx_id <= max_tx {
+                let fact: Fact = kv.get(&key.name).json().await?.unwrap();
+                let rule = rule!(
+                    atom!(sym!(fact.entity.0), sym!(fact.field.0), sym!(fact.value)),
+                    vec![]
+                );
+                rules.push(rule);
+            }
         }
 
         Ok(rules)
