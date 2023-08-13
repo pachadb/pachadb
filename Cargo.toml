@@ -17,6 +17,7 @@ lto = true
 
 [workspace.dependencies]
 anyhow = "1"
+async-trait = "0.1.73"
 chrono = "0.4"
 datafrog = "2.0.1"
 env_logger = "0.10.0"

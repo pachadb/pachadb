@@ -32,3 +32,8 @@ command = "cargo install worker-build && worker-build --release"
 [[migrations]]
 tag = "v1"
 new_classes = ["TxManager"]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["DurObjTxManager"]
+deleted_classes = ["TxManager"]
