@@ -1,23 +1,23 @@
 # PachaDB
 
-Pacha is an _edge database_. This means you can run it on edge providers like
+Pacha is an **edge database**. This means you can run it on edge providers like
 Cloduflare, and it'll scale all over the world without you doing much.
 
-Pacha is an _graph database_. This means that the data in Pacha is stored as tiny little _facts_. Like this:
+Pacha is an **graph database**. This means that the data in Pacha is stored as tiny little **facts**. Like this:
 
 * Obi-wan is the master of Anakin
 * Anakin is the master of Ahsoka
 
-Obi-wan here is an _entity_. "Is the master of" is what we call a _relation_,
-and then Anakin and Ahsoka are _values_.
+Obi-wan here is an **entity**. "Is the master of" is what we call a **relation**,
+and then Anakin and Ahsoka are **values**.
 
-Pacha is an _embeddable database_ and you can run it everywhere:
+Pacha is an **embeddable database** and you can run it everywhere:
 
 * on the browser
 * on your backend with a file system or in-memor
 * and even as a standalone 
 
-Pacha uses _Datalog_ instead of SQL for queries. Since the data in Pacha forms a Graph, Datalog is a much easier way to query for it. For example:
+Pacha uses **Datalog** instead of SQL for queries. Since the data in Pacha forms a Graph, Datalog is a much easier way to query for it. For example:
 
 `(?master is-master-of ?padawan)` returns all the masters with all their padawans.
 
@@ -49,7 +49,7 @@ SELECT j.id, jp.id, sf.id from jedis as j
 ```
 
 
-Pacha is an _immutable database_. This means that as you add information,
+Pacha is an **immutable database**. This means that as you add information,
 nothing is lost! This allows you to query your data over time.
 
 In the datalog queries we did before, we can specify an `as-of` marker to go back in time and see the results of this query then.
