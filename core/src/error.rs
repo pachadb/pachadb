@@ -1,5 +1,5 @@
-use pachadb_nanolog::parser::ParseError;
 use thiserror::*;
+use crate::nanolog::parser::ParseError;
 
 #[derive(Error, Debug)]
 pub enum PachaError {

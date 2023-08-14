@@ -1,5 +1,5 @@
 use crate::*;
-use pachadb_nanolog::engine::{Rule, Term};
+use crate::nanolog::engine::{Rule, Term};
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Scan {

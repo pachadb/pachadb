@@ -1,13 +1,21 @@
+pub mod nanolog;
 pub mod backend;
 mod consolidation;
 mod error;
 mod index;
-mod model;
+pub mod model;
 mod query_executor;
 mod query_planner;
 mod store;
 mod tx_manager;
-mod util;
+
+#[cfg(not(feature = "wasm"))]
+mod value;
+#[cfg(not(feature = "wasm"))]
+pub use value::*;
+
+#[cfg(feature = "wasm")]
+pub use backend::wasm::*;
 
 pub use consolidation::*;
 pub use error::*;
@@ -18,8 +26,8 @@ pub use query_planner::*;
 pub use store::*;
 pub use tx_manager::*;
 
-use pachadb_nanolog::engine::Atom;
-use pachadb_nanolog::parser::Parser;
+use nanolog::engine::Atom;
+use nanolog::parser::Parser;
 use std::sync::Arc;
 
 #[cfg(test)]
@@ -52,12 +60,12 @@ where
         }
     }
 
-    pub async fn state(&mut self, facts: Vec<UserFact>) -> PachaResult<TxId> {
+    pub async fn state(&self, facts: Vec<UserFact>) -> PachaResult<TxId> {
         let tx = self.tx_manager.transaction(facts).await?;
         self.tx_manager.commit(tx).await
     }
 
-    pub async fn query(&mut self, query: impl AsRef<str>) -> PachaResult<Vec<Atom>> {
+    pub async fn query(&self, query: impl AsRef<str>) -> PachaResult<Vec<Atom>> {
         let query = Parser.parse(query.as_ref())?;
         let tx_id = self.tx_manager.last_tx_id().await?;
         let plan = self.query_planner.plan(query, tx_id)?;

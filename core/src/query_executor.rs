@@ -1,8 +1,8 @@
 use crate::*;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
-use pachadb_nanolog::engine::{Atom, Rule, Solver, Term};
-use pachadb_nanolog::{atom, rule, sym};
+use crate::nanolog::engine::{Atom, Rule, Solver, Term};
+use crate::{atom, rule, sym};
 use std::collections::HashSet;
 
 #[async_trait(?Send)]

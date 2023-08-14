@@ -1,10 +1,13 @@
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
+
 use crate::*;
-use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(transparent)]
+#[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
 pub struct Uri(pub String);
 
 impl ToString for Uri {
@@ -13,28 +16,8 @@ impl ToString for Uri {
     }
 }
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub enum Value {
-    String(String),
-    Uri(Uri),
-}
-
-impl From<Uri> for Value {
-    fn from(value: Uri) -> Self {
-        Self::Uri(value)
-    }
-}
-
-impl ToString for Value {
-    fn to_string(&self) -> String {
-        match self {
-            Value::String(s) => s.to_string(),
-            Value::Uri(u) => u.to_string(),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
 pub struct Fact {
     pub tx_id: TxId,
     pub id: Uri,
@@ -42,18 +25,17 @@ pub struct Fact {
     pub field: Uri,
     pub source: Uri,
     pub value: Value,
-    #[serde(with = "util::serde::iso8601")]
-    pub stated_at: DateTime<Utc>,
+    pub stated_at: DateTime,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
 pub struct UserFact {
     pub entity: Uri,
     pub field: Uri,
     pub source: Uri,
     pub value: Value,
-    #[serde(with = "util::serde::iso8601")]
-    pub stated_at: DateTime<Utc>,
+    pub stated_at: DateTime,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -77,18 +59,16 @@ pub struct Entity {
     pub uri: Uri,
     pub fields: HashMap<Uri, Value>,
     pub prior_facts: HashMap<Uri, Fact>,
-    #[serde(with = "util::serde::iso8601")]
-    pub created_at: DateTime<Utc>,
-    #[serde(with = "util::serde::iso8601")]
-    pub last_updated_at: DateTime<Utc>,
+    pub created_at: DateTime,
+    pub last_updated_at: DateTime,
 }
 
 impl Entity {
     pub fn new(uri: Uri) -> Self {
         Self {
             uri,
-            created_at: chrono::Utc::now(),
-            last_updated_at: chrono::Utc::now(),
+            created_at: DateTime::now_utc(),
+            last_updated_at: DateTime::now_utc(),
             fields: Default::default(),
             prior_facts: Default::default(),
         }
@@ -107,6 +87,6 @@ impl Entity {
     pub fn insert_fact(&mut self, fact: Fact) {
         self.fields.insert(fact.field.clone(), fact.value.clone());
         self.prior_facts.insert(fact.field.clone(), fact);
-        self.last_updated_at = chrono::Utc::now();
+        self.last_updated_at = DateTime::now_utc();
     }
 }
