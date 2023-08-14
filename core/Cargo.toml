@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-wasm = ["wasm-bindgen"]
+wasm = ["wasm-bindgen", "serde_repr"]
 
 [dependencies]
 anyhow.workspace = true
@@ -24,6 +24,8 @@ uuid.workspace = true
 
 time = { workspace = true, features = ["wasm-bindgen"] }
 wasm-bindgen = { version = "0.2.87", optional = true }
+serde_repr = { version = "0.1.16", optional = true }
+log.workspace = true
 
 [build-dependencies]
 lalrpop.workspace = true

@@ -18,15 +18,17 @@ impl Store for InMemoryStore {
     }
 
     async fn get_next_tx_id(&self) -> PachaResult<TxId> {
-        let tx_id = self.get_tx_id().await?;
-        let next_tx_id = tx_id.next();
-        (*self.tx_id.write().unwrap()) = next_tx_id;
-        Ok(tx_id)
+        let curr_tx_id = *self.tx_id.read().unwrap();
+        let mut next_tx_id = self.tx_id.write().unwrap();
+        *next_tx_id = curr_tx_id.next();
+        debug!("next_tx_id: {:?} -> {:?}", curr_tx_id, next_tx_id);
+        Ok(curr_tx_id)
     }
 
     async fn put_facts(&self, facts: impl Iterator<Item = &Fact>) -> PachaResult<()> {
         let mut fact_map = self.facts.write().unwrap();
         for fact in facts {
+            debug!("writing fact: {:?}", &fact.id);
             fact_map.insert(fact.id.clone(), fact.clone());
         }
         Ok(())

@@ -29,6 +29,7 @@ pub use tx_manager::*;
 use nanolog::engine::Atom;
 use nanolog::parser::Parser;
 use std::sync::Arc;
+use log::*;
 
 #[cfg(test)]
 #[macro_use]
@@ -61,12 +62,16 @@ where
     }
 
     pub async fn state(&self, facts: Vec<UserFact>) -> PachaResult<TxId> {
+        debug!("stating {} facts", facts.len());
         let tx = self.tx_manager.transaction(facts).await?;
+        debug!("tx_id = {:#?} -> {:#?}", tx.id, self.tx_manager.last_tx_id().await?);
         self.tx_manager.commit(tx).await
     }
 
     pub async fn query(&self, query: impl AsRef<str>) -> PachaResult<Vec<Atom>> {
-        let query = Parser.parse(query.as_ref())?;
+        let query = query.as_ref();
+        debug!("runnig query {}", query);
+        let query = Parser.parse(query)?;
         let tx_id = self.tx_manager.last_tx_id().await?;
         let plan = self.query_planner.plan(query, tx_id)?;
         self.query_executor.execute(plan).await

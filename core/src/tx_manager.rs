@@ -68,7 +68,7 @@ where
     C: Consolidator,
 {
     async fn transaction(&self, facts: Vec<UserFact>) -> PachaResult<Transaction> {
-        let tx_id: TxId = self.storage.get_next_tx_id().await?;
+        let tx_id = self.storage.get_next_tx_id().await?;
 
         let facts = facts
             .into_iter()
@@ -83,6 +83,8 @@ where
             })
             .collect();
 
+        debug!("creating transaction {:?}", tx_id);
+
         Ok(Transaction {
             id: tx_id,
             fact_ids: vec![],
@@ -95,6 +97,7 @@ where
         self.storage.put_transaction(&tx).await?;
         self.index.put(tx.facts.iter()).await?;
         self.consolidator.consolidate(tx.facts.iter()).await?;
+        debug!("committed transaction {:?}", tx.id);
         Ok(tx.id)
     }
 

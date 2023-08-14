@@ -35,6 +35,7 @@ pub struct UserFact {
     pub field: Uri,
     pub source: Uri,
     pub value: Value,
+    #[serde(default = "DateTime::now_utc")]
     pub stated_at: DateTime,
 }
 
