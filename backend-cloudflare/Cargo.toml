@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 pachadb-core = { path = "../core", version = "*" }
 
-worker.workspace = true
 async-trait.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_derive.workspace = true
+worker = { version = "0.0.17", features = ["queue"] }

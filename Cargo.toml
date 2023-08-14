@@ -2,10 +2,10 @@
 members = [
   "cli",
   "core",
-  "nanolog",
   "nanolog-repl",
-  "backend-cloudflare",
-  "examples/cloudflare-simple",
+  "core-wasm",
+  # "backend-cloudflare",
+  # "examples/cloudflare-simple",
   # "worker-intake",
   # "worker-query",
   # "worker-indexing",
@@ -22,7 +22,7 @@ anyhow = "1"
 assert_matches = "1.5.0"
 async-recursion = "1.0.4"
 async-trait = "0.1.73"
-chrono = "0.4"
+chrono = { version = "0.4", features = ["serde"], default-features = true }
 datafrog = "2.0.1"
 env_logger = "0.10.0"
 futures = "0.3.28"
@@ -42,6 +42,7 @@ structopt = "0.3"
 thiserror = "1.0"
 tokio = { version = "1", features = ["full"] }
 tokio-serde = "0.8"
+time = { version = "0.3" }
 tokio-util = { version = "0.7", features = ["rt", "compat"] }
 tracing = { version = "0.1", features = ["log"] }
 url = "2"
@@ -54,4 +55,3 @@ uuid = { version = "1.4", features = [
 ] }
 wasm-logger = "0.2.0"
 whoami = "1.4"
-worker = { version = "0.0.17", features = ["queue"] }

@@ -1,5 +1,5 @@
 [package]
-name = "core-wasm"
+name = "pachadb-core-wasm"
 version = "0.1.0"
 authors = ["Leandro Ostera <leandro@abstractmachines.dev>"]
 edition = "2018"
@@ -11,8 +11,8 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-pachadb-core = { path = "../core", version = "*" }
-wasm-bindgen = "0.2.86"
+pachadb-core = { path = "../core", version = "*", features = ["wasm"] }
+wasm-bindgen = "0.2.87"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -22,10 +22,12 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 uuid.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde-wasm-bindgen = "0.5.0"
-chrono.workspace = true
 serde_derive.workspace = true
 gloo-utils = { version = "0.1.7", features = ["serde"] }
 tsify = "0.4.5"
+time = {workspace= true, features =["wasm-bindgen"] }
+once_cell = "1.18.0"
+wasm-bindgen-futures = "0.4.37"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
