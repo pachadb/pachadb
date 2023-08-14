@@ -1,5 +1,6 @@
 use crate::*;
 use serde_derive::{Deserialize, Serialize};
+use serde_repr::*;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -10,11 +11,13 @@ impl Uri {
     }
 }
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
 #[wasm_bindgen]
 pub enum ValueTag {
-    String,
-    Uri,
+    Unknown = 0,
+    Uri = 1,
+    String = 2,
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -66,6 +69,7 @@ impl ToString for Value {
 }
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
 #[wasm_bindgen]
 pub struct DateTime(String);
 
