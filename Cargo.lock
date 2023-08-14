@@ -130,6 +130,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "assert_matches"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
+
+[[package]]
 name = "async-compression"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -392,12 +398,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 
 [[package]]
-name = "datafrog"
-version = "2.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0afaad2b26fa326569eb264b1363e8ae3357618c43982b3f285f0774ce76b69"
-
-[[package]]
 name = "diff"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -453,6 +453,16 @@ name = "endian-type"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c34f04666d835ff5d62e058c3995147c06f42fe86ff053337632bca83e42702d"
+
+[[package]]
+name = "env_logger"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a19187fea3ac7e84da7dacf48de0c45d63c6a76f9490dae389aead16c243fce3"
+dependencies = [
+ "log",
+ "regex",
+]
 
 [[package]]
 name = "env_logger"
@@ -999,6 +1009,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9376a4f0340565ad675d11fc1419227faf5f60cd7ac9cb2e7185a471f30af833"
 
 [[package]]
+name = "maud"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0bab19cef8a7fe1c18a43e881793bfc9d4ea984befec3ae5bd0415abf3ecf00"
+dependencies = [
+ "itoa",
+ "maud_macros",
+]
+
+[[package]]
+name = "maud_macros"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0be95d66c3024ffce639216058e5bae17a83ecaf266ffc6e4d060ad447c9eed2"
+dependencies = [
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1165,12 +1197,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pachadb-backend-cloudflare"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "pachadb-core",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "worker",
+]
+
+[[package]]
 name = "pachadb-cli"
 version = "0.0.0"
 dependencies = [
  "anyhow",
  "chrono",
- "env_logger",
+ "env_logger 0.10.0",
  "human-panic",
  "pachadb-core",
  "pachadb-nanolog",
@@ -1190,16 +1234,39 @@ name = "pachadb-core"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "assert_matches",
  "async-recursion",
  "async-trait",
  "chrono",
  "futures",
  "pachadb-nanolog",
+ "quickcheck",
+ "quickcheck_async",
  "serde",
  "serde_derive",
  "serde_json",
  "thiserror",
+ "tokio",
  "uuid",
+]
+
+[[package]]
+name = "pachadb-examples-cloudflare-simple"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "console_error_panic_hook",
+ "futures",
+ "log",
+ "maud",
+ "pachadb-backend-cloudflare",
+ "pachadb-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "uuid",
+ "wasm-logger",
+ "worker",
 ]
 
 [[package]]
@@ -1208,6 +1275,7 @@ version = "0.1.0"
 dependencies = [
  "lalrpop",
  "lalrpop-util",
+ "quickcheck",
  "serde",
  "serde_derive",
  "serde_json",
@@ -1220,76 +1288,6 @@ version = "0.1.0"
 dependencies = [
  "pachadb-nanolog",
  "rustyline",
-]
-
-[[package]]
-name = "pachadb-worker-consolidation"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "futures",
- "log",
- "pachadb-core",
- "reqwest",
- "serde",
- "serde_json",
- "uuid",
- "wasm-logger",
- "worker",
-]
-
-[[package]]
-name = "pachadb-worker-indexing"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "futures",
- "log",
- "pachadb-core",
- "reqwest",
- "serde",
- "serde_json",
- "uuid",
- "wasm-logger",
- "worker",
-]
-
-[[package]]
-name = "pachadb-worker-intake"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "futures",
- "log",
- "pachadb-core",
- "reqwest",
- "serde",
- "serde_json",
- "uuid",
- "wasm-logger",
- "worker",
-]
-
-[[package]]
-name = "pachadb-worker-query"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "datafrog",
- "futures",
- "log",
- "pachadb-core",
- "pachadb-nanolog",
- "reqwest",
- "serde",
- "serde_json",
- "uuid",
- "wasm-logger",
- "worker",
 ]
 
 [[package]]
@@ -1396,18 +1394,18 @@ checksum = "5be167a7af36ee22fe3115051bc51f6e6c7054c9348e28deb4f49bd6f705a315"
 
 [[package]]
 name = "pin-project"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "030ad2bc4db10a8944cb0d837f158bdfec4d4a4873ab701a95046770d11f8842"
+checksum = "fda4ed1c6c173e3fc7a83629421152e01d7b1f9b7f65fb301e490e8cfc656422"
 dependencies = [
  "pin-project-internal",
 ]
 
 [[package]]
 name = "pin-project-internal"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec2e072ecce94ec471b13398d5402c188e76ac03cf74dd1a975161b23a3f6d9c"
+checksum = "4359fd9c9171ec6e8c62926d6faaf553a8dc3f64e1507e76da7911b4f6a04405"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1475,6 +1473,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "quickcheck"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "588f6378e4dd99458b60ec275b4477add41ce4fa9f64dcba6f15adccb19b50d6"
+dependencies = [
+ "env_logger 0.8.4",
+ "log",
+ "rand",
+]
+
+[[package]]
+name = "quickcheck_async"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "247df671941313a4e255a5015772917368f1b21bfedfbd89d68fbb27e802b2fa"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]

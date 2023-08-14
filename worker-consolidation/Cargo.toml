@@ -1,5 +1,5 @@
 [package]
-name = "pachadb-worker-consolidation"
+name = "pachadb-cloud-worker-consolidation"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,6 +11,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 pachadb-core = { path = "../core", version = "*" }
+pachadb-backend-cloudflare = { path = "../backend-cloudflare", version = "*" }
 
 worker.workspace = true
 console_error_panic_hook = { version = "0.1.1", optional = true }

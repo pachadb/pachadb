@@ -206,10 +206,6 @@ impl Solver {
     }
 }
 
-struct QueryPlanner {}
-
-impl QueryPlanner {}
-
 impl std::fmt::Debug for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -311,7 +307,35 @@ macro_rules! rule {
 }
 
 #[cfg(test)]
-mod tests {
+impl quickcheck::Arbitrary for Term {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let str = String::arbitrary(g);
+        g.choose(&[Self::Var(str.clone()), Self::Sym(str)])
+            .unwrap()
+            .clone()
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Atom {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let relation = Term::arbitrary(g);
+        let args: Vec<Term> = Vec::arbitrary(g);
+        Atom { relation, args }
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Rule {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let head = Atom::arbitrary(g);
+        let body: Vec<Atom> = Vec::arbitrary(g);
+        Rule { head, body }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
     use super::*;
 
     #[test]

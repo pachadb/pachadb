@@ -4,11 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-lalrpop-util = { version = "0.20", features = ["lexer", "unicode"] }
+lalrpop-util.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 
 [build-dependencies]
-lalrpop = "0.20"
+lalrpop.workspace = true
+
+[dev-dependencies]
+quickcheck.workspace = true

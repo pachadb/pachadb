@@ -10,4 +10,4 @@ path = "src/repl.rs"
 
 [dependencies]
 pachadb-nanolog = { path = "../nanolog", version = "*" }
-rustyline = "12.0.0"
+rustyline.workspace = true
