@@ -22,4 +22,4 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 uuid.workspace = true
 wasm-logger.workspace = true
-worker.workspace = true
+worker = { version = "0.0.17", features = ["queue"] }

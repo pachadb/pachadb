@@ -10,7 +10,6 @@ path = "main.rs"
 
 [dependencies]
 pachadb-core = { path = "../core", version = "*" }
-pachadb-nanolog = { path = "../nanolog", version = "*" }
 
 anyhow.workspace = true
 env_logger.workspace = true

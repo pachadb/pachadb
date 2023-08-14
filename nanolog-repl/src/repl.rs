@@ -1,5 +1,5 @@
-use pachadb_nanolog::engine::{Rule, Solver, Term};
-use pachadb_nanolog::parser::Parser;
+use pachadb_core::nanolog::engine::{Rule, Solver, Term};
+use pachadb_core::nanolog::parser::Parser;
 use rustyline::error::ReadlineError;
 use rustyline::{DefaultEditor, Result};
 

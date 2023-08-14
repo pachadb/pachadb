@@ -9,5 +9,5 @@ name = "nanolog"
 path = "src/repl.rs"
 
 [dependencies]
-pachadb-nanolog = { path = "../nanolog", version = "*" }
+pachadb-core = { path = "../core", version = "*" }
 rustyline.workspace = true
