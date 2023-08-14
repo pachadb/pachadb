@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::ast::*;
 use crate::atom;
 use crate::engine::{Atom, Rule, Term};
@@ -67,6 +69,14 @@ pub enum ParseError {
 impl ParseError {
     fn unsupported(str: &str) -> Result<Rule, ParseError> {
         Err(Self::Unsupported(str.to_string()))
+    }
+}
+
+impl FromStr for Rule {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Parser.parse(s)
     }
 }
 

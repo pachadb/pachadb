@@ -2,49 +2,9 @@ extern crate console_error_panic_hook;
 use async_trait::async_trait;
 use log::*;
 use pachadb_core::*;
-use pachadb_nanolog::engine::*;
-use pachadb_nanolog::parser::Parser;
-use pachadb_nanolog::{atom, rule, sym};
 use std::panic;
 use worker::kv::KvStore;
 use worker::*;
-
-pub struct CloudflareIndexStore {
-    kv: KvStore,
-}
-
-impl CloudflareIndexStore {
-    pub fn new(env: &Env, kv: &str) -> Result<Self> {
-        let kv = env.kv(kv)?;
-        Ok(Self { kv })
-    }
-}
-
-#[async_trait(?Send)]
-impl IndexStore for CloudflareIndexStore {
-    async fn scan(&self, prefix: &str) -> PachaResult<Box<dyn Iterator<Item = IndexKey>>> {
-        let list = self
-            .kv
-            .list()
-            .prefix(prefix.to_string())
-            .execute()
-            .await
-            .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))?;
-
-        Ok(Box::new(
-            list.keys.into_iter().map(|key| key.name.parse().unwrap()),
-        ))
-    }
-
-    //NOTE(@ostera): make sure this retunrs an option
-    async fn get(&self, key: IndexKey) -> PachaResult<Option<Fact>> {
-        self.kv
-            .get(&key.to_string())
-            .json::<Fact>()
-            .await
-            .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))
-    }
-}
 
 #[event(fetch)]
 async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Response> {
@@ -64,26 +24,7 @@ async fn handle_request(req: Request, env: Env, _ctx: Context) -> Result<Respons
         .post_async("/", |mut req, ctx| async move {
             let query_req: QueryReq = req.json().await?;
 
-            let index_scanner = IndexScanner::new(
-                CloudflareIndexStore::new(&ctx.env, "pachadb-facts-index-by-entity")?,
-                CloudflareIndexStore::new(&ctx.env, "pachadb-facts-index-by-entity-field")?,
-                CloudflareIndexStore::new(&ctx.env, "pachadb-facts-index-by-entity-field")?,
-                CloudflareIndexStore::new(&ctx.env, "pachadb-facts-index-by-field")?,
-                CloudflareIndexStore::new(&ctx.env, "pachadb-facts-index-by-field-value")?,
-                CloudflareIndexStore::new(&ctx.env, "pachadb-facts-index-by-value")?,
-            );
-            let query_executor = DefaultQueryExecutor::new(index_scanner);
-            let query_planner = DefaultQueryPlanner::default();
-
-            let query_plan = query_planner
-                .plan_query(query_req.query, query_req.tx_id)
-                .await
-                .map_err(|err| Error::RustError(err.to_string()))?;
-
-            let result = query_executor
-                .run_query_plan(query_plan)
-                .await
-                .map_err(|err| Error::RustError(err.to_string()))?;
+						let cf_store = CloudflareStore::new(ctx.env);
 
             // NOTE(@ostera): helps ensure read-your-writes by forcing replication of facts
             // let tx_bucket = ctx.env.kv("pachadb-tx-store")?;

@@ -4,10 +4,12 @@ members = [
   "core",
   "nanolog",
   "nanolog-repl",
-  "worker-consolidation",
-  "worker-indexing",
-  "worker-intake",
-  "worker-query",
+  "backend-cloudflare",
+  "examples/cloudflare-simple",
+  # "worker-intake",
+  # "worker-query",
+  # "worker-indexing",
+  # "worker-consolidation",
 ]
 resolver = "2"
 
@@ -17,14 +19,21 @@ lto = true
 
 [workspace.dependencies]
 anyhow = "1"
+assert_matches = "1.5.0"
+async-recursion = "1.0.4"
 async-trait = "0.1.73"
 chrono = "0.4"
 datafrog = "2.0.1"
 env_logger = "0.10.0"
 futures = "0.3.28"
 human-panic = "1.1.5"
+lalrpop = "0.20"
+lalrpop-util = { version = "0.20", features = ["lexer", "unicode"] }
 log = "0.4.19"
+quickcheck = "1.0.3"
+quickcheck_async = "0.1.1"
 reqwest = { version = "0.11", features = ["json", "gzip", "brotli"] }
+rustyline = "12.0.0"
 serde = { version = "1.0", features = ["rc"] }
 serde_derive = "1.0"
 serde_json = { version = "1.0", features = ["preserve_order"] }

@@ -1,9 +1,8 @@
 extern crate console_error_panic_hook;
 use log::*;
 use pachadb_core::*;
-
 use std::panic;
-use worker::{async_trait::async_trait, *};
+use worker::*;
 
 #[durable_object]
 pub struct DurObjTxManager {
@@ -40,134 +39,6 @@ impl DurableObject for DurObjTxManager {
     }
 }
 
-pub struct CloudflareTransactionStorage<'env> {
-    env: &'env Env,
-}
-
-impl<'env> CloudflareTransactionStorage<'env> {
-    pub fn new(env: &'env Env) -> Self {
-        Self { env }
-    }
-
-    pub async fn dangerous_reset_transaction_id_to_zero(&self) -> Result<()> {
-        let ns = self.env.durable_object("PACHADB_TX_MANAGER")?;
-        let obj_id = ns.id_from_name("main")?;
-        let stub = obj_id.get_stub()?;
-        stub.fetch_with_str(
-            "https://tx-manager.pachadb.com/dangeours-reset-transaction-id-to-zero",
-        )
-        .await?
-        .text()
-        .await?;
-        Ok(())
-    }
-
-    async fn _get_next_tx_id(&self) -> Result<TxId> {
-        let ns = self.env.durable_object("PACHADB_TX_MANAGER")?;
-
-        let obj_id = ns.id_from_name("main")?;
-
-        let stub = obj_id.get_stub()?;
-
-        stub.fetch_with_str("https://tx-manager.pachadb.com/new")
-            .await?
-            .json()
-            .await
-    }
-
-    async fn _store_facts(&self, facts: &[Fact]) -> Result<()> {
-        info!("Saving {} facts", facts.len());
-        let fact_bucket = self.env.kv("pachadb-facts-store")?;
-        for fact in facts {
-            let json = serde_json::to_string(&fact)?;
-            fact_bucket.put(&fact.id.0, json)?.execute().await?;
-        }
-        Ok(())
-    }
-
-    async fn _store_transaction(&self, tx: &Transaction) -> Result<()> {
-        let tx_bucket = self.env.kv("pachadb-tx-store")?;
-        tx_bucket
-            .put(&tx.id.to_string(), tx.clone())?
-            .execute()
-            .await?;
-        Ok(())
-    }
-}
-
-#[async_trait(?Send)]
-impl<'env> pachadb_core::TxStorage for CloudflareTransactionStorage<'env> {
-    async fn get_next_tx_id(&self) -> PachaResult<TxId> {
-        self._get_next_tx_id()
-            .await
-            .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))
-    }
-
-    async fn store_facts(&self, facts: &[Fact]) -> PachaResult<()> {
-        self._store_facts(facts)
-            .await
-            .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))?;
-        Ok(())
-    }
-
-    async fn store_transaction(&self, tx: &Transaction) -> PachaResult<()> {
-        self._store_transaction(tx)
-            .await
-            .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))?;
-        Ok(())
-    }
-}
-
-pub struct CloudflareQueueIndexer {
-    queue: Queue,
-}
-
-impl CloudflareQueueIndexer {
-    pub fn new(env: &Env) -> Result<Self> {
-        Ok(Self {
-            queue: env.queue("pachadb-facts-indexing-queue")?,
-        })
-    }
-}
-
-#[async_trait(?Send)]
-impl Indexer for CloudflareQueueIndexer {
-    async fn index(&self, facts: &[Fact]) -> PachaResult<()> {
-        for fact in facts {
-            self.queue
-                .send(&fact.id)
-                .await
-                .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))?;
-        }
-        Ok(())
-    }
-}
-
-pub struct CloudflareQueueConsolidator {
-    queue: Queue,
-}
-
-impl CloudflareQueueConsolidator {
-    pub fn new(env: &Env) -> Result<Self> {
-        Ok(Self {
-            queue: env.queue("pachadb-facts-consolidation-queue")?,
-        })
-    }
-}
-
-#[async_trait(?Send)]
-impl Consolidator for CloudflareQueueConsolidator {
-    async fn consolidate(&self, facts: &[Fact]) -> PachaResult<()> {
-        for fact in facts {
-            self.queue
-                .send(&fact.id)
-                .await
-                .map_err(|err| PachaError::UnrecoverableStorageError(err.to_string()))?;
-        }
-        Ok(())
-    }
-}
-
 #[event(fetch, respond_with_errors)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -194,8 +65,8 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 							kv.delete(&key.name).await?;
 						}
 					}
-						let do_store = CloudflareTransactionStorage::new(&ctx.env);
-						do_store.dangerous_reset_transaction_id_to_zero().await?;
+						let store = CloudflareStore::new(&ctx.env);
+						store.dangerous_reset_transaction_id_to_zero().await?;
 					Response::ok("ok".to_string())
 				})
         .get_async("/:uri", |req, ctx| async move {
@@ -219,16 +90,18 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 }
 
 async fn state_facts(env: &Env, state_req: StateFactsReq) -> Result<TxId> {
-    let do_store = CloudflareTransactionStorage::new(env);
-    let indexer = CloudflareQueueIndexer::new(env)?;
-    let consolidator = CloudflareQueueConsolidator::new(env)?;
+    let cf_store = CloudflareStore::new(env);
 
     let tx_mgr = pachadb_core::DefaultTxManager::new(do_store, indexer, consolidator);
-    let tx = tx_mgr.transaction(state_req.facts).await
-							.map_err(|err| Error::RustError(err.to_string()))?;
+    let tx = tx_mgr
+        .transaction(state_req.facts)
+        .await
+        .map_err(|err| Error::RustError(err.to_string()))?;
 
-    tx_mgr.commit(tx).await
-							.map_err(|err| Error::RustError(err.to_string()))
+    tx_mgr
+        .commit(tx)
+        .await
+        .map_err(|err| Error::RustError(err.to_string()))
 }
 
 async fn fetch_entity_or_fact(env: &Env, uri: &str) -> Result<Option<String>> {

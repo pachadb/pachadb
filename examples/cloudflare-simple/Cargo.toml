@@ -1,5 +1,5 @@
 [package]
-name = "pachadb-cloud-worker-query"
+name = "pachadb-examples-cloudflare-simple"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,16 +10,17 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-pachadb-core = { path = "../core", version = "*" }
-pachadb-backend-cloudflare = { path = "../backend-cloudflare", version = "*" }
+pachadb-core = { path = "../../core", version = "*" }
+pachadb-backend-cloudflare = { path = "../../backend-cloudflare", version = "*" }
 
-chrono.workspace = true
+worker.workspace = true
 console_error_panic_hook = { version = "0.1.1", optional = true }
-futures.workspace = true
-log.workspace = true
-reqwest.workspace = true
 serde = { workspace = true }
 serde_json = { workspace = true }
+futures.workspace = true
 uuid.workspace = true
+reqwest.workspace = true
+chrono.workspace = true
 wasm-logger.workspace = true
-worker.workspace = true
+log.workspace = true
+maud = "0.25.0"

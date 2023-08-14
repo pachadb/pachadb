@@ -1,6 +1,6 @@
 use crate::flags::Flags;
 use anyhow::*;
-use pachadb_core::Uri;
+use pachadb_core::{Uri, Value};
 use reqwest::Method;
 use structopt::StructOpt;
 
@@ -33,7 +33,7 @@ impl StateCommand {
                 entity: Uri(self.entity.clone()),
                 field: Uri(self.field.clone()),
                 source: Uri(format!("system:{}", whoami::username())),
-                value: self.value.clone(),
+                value: Value::String(self.value.clone()),
                 stated_at: chrono::Utc::now(),
             }],
         };
