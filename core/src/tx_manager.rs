@@ -1,3 +1,6 @@
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
+
 use crate::*;
 use async_trait::async_trait;
 use serde_derive::{Deserialize, Serialize};
@@ -6,8 +9,10 @@ use serde_derive::{Deserialize, Serialize};
     Default, Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
 )]
 #[serde(transparent)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct TxId(pub u64);
 
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 impl TxId {
     pub fn next(&self) -> Self {
         Self(self.0 + 1)
@@ -32,9 +37,9 @@ pub struct Transaction {
 
 #[async_trait(?Send)]
 pub trait TxManager {
-    async fn transaction(&mut self, facts: Vec<UserFact>) -> PachaResult<Transaction>;
+    async fn transaction(&self, facts: Vec<UserFact>) -> PachaResult<Transaction>;
 
-    async fn commit(&mut self, tx: Transaction) -> PachaResult<TxId>;
+    async fn commit(&self, tx: Transaction) -> PachaResult<TxId>;
 
     async fn last_tx_id(&self) -> PachaResult<TxId>;
 }
@@ -62,7 +67,7 @@ where
     I: Index,
     C: Consolidator,
 {
-    async fn transaction(&mut self, facts: Vec<UserFact>) -> PachaResult<Transaction> {
+    async fn transaction(&self, facts: Vec<UserFact>) -> PachaResult<Transaction> {
         let tx_id: TxId = self.storage.get_next_tx_id().await?;
 
         let facts = facts
@@ -85,7 +90,7 @@ where
         })
     }
 
-    async fn commit(&mut self, tx: Transaction) -> PachaResult<TxId> {
+    async fn commit(&self, tx: Transaction) -> PachaResult<TxId> {
         self.storage.put_facts(tx.facts.iter()).await?;
         self.storage.put_transaction(&tx).await?;
         self.index.put(tx.facts.iter()).await?;

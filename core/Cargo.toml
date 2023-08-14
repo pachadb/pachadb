@@ -6,22 +6,29 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[dependencies]
-pachadb-nanolog = { path = "../nanolog", version = "*" }
+[features]
+wasm = ["wasm-bindgen"]
 
+[dependencies]
 anyhow.workspace = true
 assert_matches.workspace = true
 async-recursion.workspace = true
 async-trait.workspace = true
-chrono.workspace = true
 futures.workspace = true
-quickcheck_async.workspace = true
+lalrpop-util.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 
+time = { workspace = true, features = ["wasm-bindgen"] }
+wasm-bindgen = { version = "0.2.87", optional = true }
+
+[build-dependencies]
+lalrpop.workspace = true
+
 [dev-dependencies]
+quickcheck_async.workspace = true
 quickcheck.workspace = true
 tokio.workspace = true

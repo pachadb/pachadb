@@ -1,12 +1,12 @@
 use std::str::FromStr;
 
-use crate::ast::*;
+use super::ast::*;
 use crate::atom;
-use crate::engine::{Atom, Rule, Term};
+use super::engine::{Atom, Rule, Term};
 use lalrpop_util::lalrpop_mod;
 use thiserror::*;
 
-lalrpop_mod!(grammar);
+lalrpop_mod!(grammar, "/nanolog/grammar.rs");
 
 #[derive(Debug, Clone)]
 pub struct Parser;
