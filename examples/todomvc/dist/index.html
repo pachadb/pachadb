@@ -1,0 +1,106 @@
+<script src="/index.8e9bd240.js" defer=""></script>
+
+<body>
+  <div>
+    <label for="todo">
+      <span>Todo: </span>
+      <input type="text" placeholder="something to do">
+    </label>
+    <button id="add">+</button>
+  </div>
+  <hr>
+  <div id="todo-list"></div>
+  <hr>
+  <button id="all">all</button>
+  <button id="completed">completed</button>
+  <button id="pending">pending</button>
+
+  <script>let source = "pachadb:examples:todomvc";
+let todo_fact = ({ text })=>{
+    let todo_id = "todo/" + Date.now();
+    return [
+        {
+            entity: todo_id,
+            field: "is-a",
+            value: Pacha.Value.string("todo-item"),
+            source
+        },
+        {
+            entity: todo_id,
+            field: "text",
+            value: Pacha.Value.string(text),
+            source
+        },
+        {
+            entity: todo_id,
+            field: "status",
+            value: Pacha.Value.string("pending"),
+            source
+        }
+    ];
+};
+document.querySelector("#all").addEventListener("click", async (e)=>{
+    await refresh_list();
+});
+document.querySelector("#completed").addEventListener("click", async (e)=>{
+    await refresh_list("completed");
+});
+document.querySelector("#pending").addEventListener("click", async (e)=>{
+    await refresh_list("pending");
+});
+document.querySelector("#add").addEventListener("click", async (e)=>{
+    const input = e.target.parentElement.querySelector("input");
+    const text = input.value;
+    let facts = todo_fact({
+        text
+    });
+    input.value = "";
+    let tx_id = await window.db.state(facts);
+    console.log("fact", facts);
+    console.log("tx_id", tx_id);
+    await refresh_list();
+});
+async function refresh_list(status = "?status") {
+    let results = await db.query(`
+        ?what is-a todo-item
+        ?what text ?text
+        ?what status (?status = ${status})
+      `);
+    let list = document.querySelector("#todo-list");
+    list.innerHTML = "";
+    results.map((r)=>({
+            id: r.args[0].Sym,
+            text: r.args[2].Sym,
+            status: r.args[4].Sym
+        })).sort((a, b)=>b.id.localeCompare(a.id)).forEach((todo)=>{
+        let li = document.createElement("li");
+        li.innerText = todo.text;
+        if (todo.status == "pending") {
+            let complete = document.createElement("button");
+            complete.innerText = "done";
+            complete.addEventListener("click", async (e)=>{
+                await window.db.state([
+                    {
+                        entity: todo.id,
+                        field: "status",
+                        value: Pacha.Value.string("completed"),
+                        source
+                    },
+                    {
+                        entity: todo.id,
+                        field: "status",
+                        value: todo.value,
+                        source,
+                        retracted: true
+                    }
+                ]);
+                await refresh_list(status);
+            });
+            li.appendChild(complete);
+        }
+        list.appendChild(li);
+    });
+}
+
+</script>
+</body>

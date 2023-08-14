@@ -1,0 +1,10 @@
+{
+  "name": "todomvc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "pachadb-core-wasm": "../../core-wasm/pkg/",
+    "prettier": "^3.0.1"
+  }
+}
