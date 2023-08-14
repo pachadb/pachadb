@@ -20,10 +20,11 @@ pub static PACHA_DB_INSTANCE: Lazy<PachaDb<InMemoryStore, InMemoryIndex, InMemor
         PachaDb::new(
             InMemoryStore::default(),
             InMemoryIndex::default(),
-            InMemoryConsolidator,
+            InMemoryConsolidator::default(),
         )
     });
 
+#[derive(Default)]
 #[wasm_bindgen]
 pub struct Client;
 
@@ -31,7 +32,7 @@ pub struct Client;
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
-        Self {}
+        Self
     }
 
     pub async fn state(&mut self, obj: JsValue) -> Result<TxId, JsValue> {

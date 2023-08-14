@@ -78,11 +78,37 @@ impl Index for InMemoryIndex {
     }
 }
 
-#[derive(Default, Debug)]
-pub struct InMemoryConsolidator;
+#[derive(Default)]
+pub struct InMemoryConsolidator {
+    entities: Arc<RwLock<HashMap<Uri, Entity>>>,
+}
+
 #[async_trait(?Send)]
 impl Consolidator for InMemoryConsolidator {
-    async fn consolidate(&self, _facts: impl Iterator<Item = &Fact>) -> PachaResult<()> {
+    async fn consolidate(&self, facts: impl Iterator<Item = &Fact>) -> PachaResult<()> {
+        let mut entities = self.entities.write().unwrap();
+
+        let facts_by_entity = facts.into_iter().fold(HashMap::new(), |mut map, fact| {
+            map.entry(fact.entity.clone())
+                .or_insert_with(Vec::new)
+                .push(fact);
+            map
+        });
+
+        for (entity_uri, facts) in facts_by_entity {
+            info!("Consolidating entity {:?}", &entity_uri);
+            let mut entity = (*entities)
+                .get(&entity_uri)
+                .cloned()
+                .unwrap_or_else(|| Entity::new(entity_uri.clone()));
+
+            for fact in facts {
+                entity.consolidate(fact.clone());
+            }
+
+            entities.insert(entity_uri, entity);
+        }
+
         Ok(())
     }
 }
