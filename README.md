@@ -1,23 +1,28 @@
 # PachaDB
 
+Pacha is an embeddable, immutable, graph, edge database.
+
 Pacha is an **edge database**. This means you can run it on edge providers like
 Cloduflare, and it'll scale all over the world without you doing much.
 
-Pacha is an **graph database**. This means that the data in Pacha is stored as tiny little **facts**. Like this:
+Pacha is a **graph database**. This means that the data in Pacha is stored as
+tiny little **facts** that form a huge graph of knowledge. Like this:
 
 * Obi-wan is the master of Anakin
 * Anakin is the master of Ahsoka
 
-Obi-wan here is an **entity**. "Is the master of" is what we call a **relation**,
-and then Anakin and Ahsoka are **values**.
+Obi-wan here is an **entity**. "Is the master of" is what we call a
+**relation**, and then Anakin and Ahsoka are **values**. Notice that any entity
+can be referenced as a value.
 
 Pacha is an **embeddable database** and you can run it everywhere:
 
 * on the browser
-* on your backend with a file system or in-memor
+* on your backend with a file system or in-memory
 * and even as a standalone 
 
-Pacha uses **Datalog** instead of SQL for queries. Since the data in Pacha forms a Graph, Datalog is a much easier way to query for it. For example:
+Pacha uses **Datalog** instead of SQL for queries. Since the data in Pacha
+forms a Graph, Datalog is a much easier way to query for it. For example:
 
 `(?master is-master-of ?padawan)` returns all the masters with all their padawans.
 
