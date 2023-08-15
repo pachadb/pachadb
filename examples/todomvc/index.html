@@ -75,7 +75,7 @@
       let list = document.querySelector("#todo-list");
       list.innerHTML = "";
       results
-        .map( r => ({ id: r.args[0].Sym, text: r.args[2].Sym, status: r.args[4].Sym }))
+        .map( r => ({ id: r.args[0].Sym, text: r.args[2].Sym, status }))
         .sort((a, b) => b.id.localeCompare(a.id))
         .forEach((todo) => {
           let li = document.createElement("li");
@@ -92,13 +92,15 @@
                   value: Pacha.Value.string("completed"),
                   source,
                 },
+                /*
                 {
                   entity: todo.id,
                   field: "status",
-                  value: todo.value,
+                  value: Pacha.Value.string(todo.status),
                   source,
                   retracted: true,
                 }
+                */
               ]);
               await refresh_list(status)
             });

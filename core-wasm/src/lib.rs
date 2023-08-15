@@ -10,6 +10,7 @@ use pachadb_core::{
     backend::memory::{InMemoryConsolidator, InMemoryIndex, InMemoryStore},
     PachaDb,
 };
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
 pub static PACHA_DB_INSTANCE: Lazy<PachaDb<InMemoryStore, InMemoryIndex, InMemoryConsolidator>> =
@@ -51,18 +52,14 @@ impl Client {
     pub async fn query(&mut self, obj: JsValue) -> Result<JsValue, JsValue> {
         let query: String = serde_wasm_bindgen::from_value(obj)?;
         debug!("querying: {:#?}", &query);
-        let atoms = PACHA_DB_INSTANCE
+
+        let result = PACHA_DB_INSTANCE
             .query(query)
             .await
             .map_err(|err| JsError::new(&err.to_string()))?;
 
-        let query0 = "query0".to_string();
-        let result = atoms
-            .into_iter()
-            .filter(|atom| matches!(&atom.relation, Term::Sym(s) if *s == query0))
-            .collect::<Vec<Atom>>();
-
-        let result = serde_wasm_bindgen::to_value(&result)?;
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        let result =  result.serialize(&serializer)?;
         debug!("results: {:#?}", &result);
         Ok(result)
     }

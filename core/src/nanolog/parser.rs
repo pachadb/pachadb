@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use super::ast::*;
-use crate::atom;
 use super::engine::{Atom, Rule, Term};
+use crate::atom;
 use lalrpop_util::lalrpop_mod;
 use thiserror::*;
 
@@ -19,30 +20,34 @@ impl Parser {
 
         let Expr::List(ast) = ast else { return ParseError::unsupported("top-level query must be a list!"); };
 
-        let mut args = vec![];
+        let mut args: HashMap<String, Term> = HashMap::default();
         let mut body = vec![];
 
-        for chunk in ast.chunks(3) {
+        for chunk in ast.chunks(3){
+
             let entity = self.expr_to_term(&chunk[0]);
             let field = self.expr_to_term(&chunk[1]);
             let value = self.expr_to_term(&chunk[2]);
 
-            if entity.is_var() {
-                args.push(entity.clone());
+            if let Term::Var(name,_ ) = &entity {
+                args.insert(name.to_string(), entity.clone());
             }
-            if field.is_var() {
-                args.push(field.clone());
+
+            if let Term::Var(name,_ ) = &field {
+                args.insert(name.to_string(), field.clone());
             }
-            if value.is_var() {
-                args.push(value.clone());
+
+            if let Term::Var(name,_ ) = &value {
+                args.insert(name.to_string(), value.clone());
             }
+
             body.push(atom!(entity, field, value));
         }
 
         // make them part of our query
         let head = Atom {
             relation: Term::Sym("query0".to_string()),
-            args,
+            args: args.into_values().collect(),
         };
 
         Ok(Rule { head, body })
@@ -51,7 +56,7 @@ impl Parser {
     fn expr_to_term(&self, expr: &Expr) -> Term {
         match expr {
             Expr::Symbol(s) => Term::Sym(s.to_string()),
-            Expr::Variable(v) => Term::Var(v.to_string()),
+            Expr::Variable(v) => Term::Var(v.to_string(), None),
             Expr::List(_) => unimplemented!(),
         }
     }

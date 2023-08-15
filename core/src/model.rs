@@ -30,6 +30,13 @@ pub struct Fact {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
+pub enum FactMode {
+    State = 0,
+    Retract = 1
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
 pub struct UserFact {
     pub entity: Uri,
     pub field: Uri,
@@ -37,6 +44,7 @@ pub struct UserFact {
     pub value: Value,
     #[serde(default = "DateTime::now_utc")]
     pub stated_at: DateTime,
+    // pub mode: FactMode,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

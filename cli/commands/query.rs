@@ -1,7 +1,7 @@
 use crate::flags::Flags;
 use anyhow::*;
 use pachadb_core::TxId;
-use pachadb_nanolog::engine::{Atom, Term};
+use pachadb_core::nanolog::engine::{Atom, Term};
 use reqwest::Method;
 use structopt::StructOpt;
 

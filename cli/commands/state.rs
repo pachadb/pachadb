@@ -33,7 +33,7 @@ impl StateCommand {
                 entity: Uri(self.entity.clone()),
                 field: Uri(self.field.clone()),
                 source: Uri(format!("system:{}", whoami::username())),
-                value: Value::string(self.value.clone()),
+                value: Value::string(&self.value),
                 stated_at: DateTime::now_utc(),
             }],
         };

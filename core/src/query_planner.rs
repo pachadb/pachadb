@@ -43,30 +43,30 @@ impl QueryPlanner for DefaultQueryPlanner {
             .body
             .iter()
             .flat_map(|atom| match &atom.relation {
-                Term::Var(_) => {
+                Term::Var(..) => {
                     let entity = atom.args.get(0).unwrap();
                     let value = atom.args.get(1).unwrap();
                     match (entity, value) {
-                        (Term::Var(_), Term::Sym(v)) => vec![Scan::Value(v.clone())],
-                        (Term::Sym(e), Term::Var(_)) => vec![Scan::Entity(e.clone())],
+                        (Term::Var(..), Term::Sym(v)) => vec![Scan::Value(v.clone())],
+                        (Term::Sym(e), Term::Var(..)) => vec![Scan::Entity(e.clone())],
                         (Term::Sym(e), Term::Sym(v)) => {
                             vec![Scan::EntityValue(e.clone(), v.clone())]
                         }
-                        (Term::Var(_), Term::Var(_)) => vec![],
+                        (Term::Var(..), Term::Var(..)) => vec![],
                     }
                 }
                 Term::Sym(f) => {
                     let entity = atom.args.get(0).unwrap();
                     let value = atom.args.get(1).unwrap();
                     match (entity, value) {
-                        (Term::Var(_), Term::Sym(v)) => {
+                        (Term::Var(..), Term::Sym(v)) => {
                             vec![Scan::FieldValue(f.clone(), v.clone())]
                         }
-                        (Term::Sym(e), Term::Var(_)) => {
+                        (Term::Sym(e), Term::Var(..)) => {
                             vec![Scan::EntityField(e.clone(), f.clone())]
                         }
                         (Term::Sym(_), Term::Sym(_)) => vec![],
-                        (Term::Var(_), Term::Var(_)) => vec![Scan::Field(f.clone())],
+                        (Term::Var(..), Term::Var(..)) => vec![Scan::Field(f.clone())],
                     }
                 }
             })
@@ -82,9 +82,9 @@ impl QueryPlanner for DefaultQueryPlanner {
 
 #[cfg(test)]
 mod tests {
-    use pachadb_nanolog::engine::{Atom, Rule, Term};
-    use pachadb_nanolog::parser::Parser;
-    use pachadb_nanolog::{atom, query, rule, sym, var};
+    use crate::nanolog::engine::{Atom, Rule, Term};
+    use crate::nanolog::parser::Parser;
+    use crate::{atom, query, rule, sym, var};
     use quickcheck::Arbitrary;
 
     use super::*;

@@ -1,15 +1,15 @@
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Term {
-    Var(String),
+    Var(String, Option<String>),
     Sym(String),
 }
 
 impl Term {
     pub fn is_var(&self) -> bool {
-        matches!(&self, Self::Var(_))
+        matches!(&self, Self::Var(..))
     }
 
     pub fn is_symbol(&self) -> bool {
@@ -55,7 +55,7 @@ impl Substitution {
     }
 }
 
-#[derive(Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Atom {
     pub relation: Term,
     pub args: Vec<Term>,
@@ -88,7 +88,7 @@ impl Atom {
             }
 
             // we have a variable that is unified to a symbol
-            (v @ Term::Var(_), s1 @ Term::Sym(_)) => {
+            (v @ Term::Var(..), s1 @ Term::Sym(_)) => {
                 let inc_sub = self.do_unify(iter)?;
                 let find = inc_sub.find(v);
                 match find {
@@ -98,7 +98,7 @@ impl Atom {
             }
 
             // everything else is unsupported
-            (_, Term::Var(_)) => panic!("we expect the right side atoms to be grounded!"),
+            (_, Term::Var(..)) => panic!("we expect the right side atoms to be grounded!"),
         }
     }
 
@@ -127,7 +127,7 @@ impl Atom {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Rule {
     pub head: Atom,
     pub body: Vec<Atom>,
@@ -206,10 +206,11 @@ impl Solver {
     }
 }
 
+/*
 impl std::fmt::Debug for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Term::Var(x) => write!(f, "{}", x),
+            Term::Var(x, ..) => write!(f, "{}", x),
             Term::Sym(s) => write!(f, "{}", s),
         }
     }
@@ -254,6 +255,7 @@ impl std::fmt::Debug for Rule {
         write!(f, ".")
     }
 }
+*/
 
 #[macro_export]
 macro_rules! sym {
@@ -265,7 +267,7 @@ macro_rules! sym {
 #[macro_export]
 macro_rules! var {
     ($term:expr) => {
-        Term::Var(format!("?{}", $term))
+        Term::Var(format!("?{}", $term), None)
     };
 }
 
@@ -304,34 +306,6 @@ macro_rules! rule {
     ($h:expr, $b:expr) => {
         Rule { head: $h, body: $b }
     };
-}
-
-#[cfg(test)]
-impl quickcheck::Arbitrary for Term {
-    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
-        let str = String::arbitrary(g);
-        g.choose(&[Self::Var(str.clone()), Self::Sym(str)])
-            .unwrap()
-            .clone()
-    }
-}
-
-#[cfg(test)]
-impl quickcheck::Arbitrary for Atom {
-    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
-        let relation = Term::arbitrary(g);
-        let args: Vec<Term> = Vec::arbitrary(g);
-        Atom { relation, args }
-    }
-}
-
-#[cfg(test)]
-impl quickcheck::Arbitrary for Rule {
-    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
-        let head = Atom::arbitrary(g);
-        let body: Vec<Atom> = Vec::arbitrary(g);
-        Rule { head, body }
-    }
 }
 
 #[cfg(test)]

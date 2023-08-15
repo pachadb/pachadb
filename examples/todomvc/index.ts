@@ -1,4 +1,4 @@
-import init, * as Pacha from "pachadb-core-wasm";
+import init, * as Pacha from "../../core-wasm/pkg";
 
 let boot = async () => {
   await init();

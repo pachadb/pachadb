@@ -1,9 +1,9 @@
-pub mod nanolog;
 pub mod backend;
 mod consolidation;
 mod error;
 mod index;
 pub mod model;
+pub mod nanolog;
 mod query_executor;
 mod query_planner;
 mod store;
@@ -26,10 +26,13 @@ pub use query_planner::*;
 pub use store::*;
 pub use tx_manager::*;
 
+use log::*;
 use nanolog::engine::Atom;
 use nanolog::parser::Parser;
+use std::collections::HashMap;
 use std::sync::Arc;
-use log::*;
+
+use crate::nanolog::engine::Term;
 
 #[cfg(test)]
 #[macro_use]
@@ -64,17 +67,46 @@ where
     pub async fn state(&self, facts: Vec<UserFact>) -> PachaResult<TxId> {
         debug!("stating {} facts", facts.len());
         let tx = self.tx_manager.transaction(facts).await?;
-        debug!("tx_id = {:#?} -> {:#?}", tx.id, self.tx_manager.last_tx_id().await?);
+        debug!(
+            "tx_id = {:#?} -> {:#?}",
+            tx.id,
+            self.tx_manager.last_tx_id().await?
+        );
         self.tx_manager.commit(tx).await
     }
 
-    pub async fn query(&self, query: impl AsRef<str>) -> PachaResult<Vec<Atom>> {
+    pub async fn query(&self, query: impl AsRef<str>) -> PachaResult<Vec<HashMap<String, String>>> {
         let query = query.as_ref();
-        debug!("runnig query {}", query);
+        debug!("running query {}", query);
         let query = Parser.parse(query)?;
+        let headers = query.head.args.clone();
+        debug!("parsed query {:#?}", query);
         let tx_id = self.tx_manager.last_tx_id().await?;
         let plan = self.query_planner.plan(query, tx_id)?;
-        self.query_executor.execute(plan).await
+
+        let query0 = "query0".to_string();
+        let mut results: Vec<HashMap<String, String>> = vec![];
+        for row in self.query_executor.execute(plan).await? {
+            if matches!(&row.relation, Term::Sym(s) if *s == query0) {
+                let row_map = headers
+                    .clone()
+                    .into_iter()
+                    .zip(row.args)
+                    .filter_map(|(k, v)| match (k, v) {
+                        (Term::Var(_name, Some(expected)), Term::Sym(value))
+                            if expected != value =>
+                        {
+                            None
+                        }
+                        (Term::Var(name, _), Term::Sym(value)) => Some((name, value)),
+                        _ => unreachable!(),
+                    })
+                    .collect::<HashMap<String, String>>();
+                results.push(row_map);
+            }
+        }
+
+        Ok(results)
     }
 }
 
@@ -88,7 +120,7 @@ mod tests {
         let _db = PachaDb::new(
             InMemoryStore::default(),
             InMemoryIndex::default(),
-            InMemoryConsolidator,
+            InMemoryConsolidator::default(),
         );
     }
 }
