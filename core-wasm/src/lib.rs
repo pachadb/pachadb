@@ -1,5 +1,7 @@
 mod utils;
 
+use std::collections::HashMap;
+
 use log::*;
 use once_cell::sync::Lazy;
 pub use pachadb_core::model::*;
@@ -58,8 +60,17 @@ impl Client {
             .await
             .map_err(|err| JsError::new(&err.to_string()))?;
 
+        let result = result
+            .into_iter()
+            .map(|m| {
+                m.into_iter()
+                    .map(|(k, v)| (k.replace('?', ""), v))
+                    .collect()
+            })
+            .collect::<Vec<HashMap<String, String>>>();
+
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-        let result =  result.serialize(&serializer)?;
+        let result = result.serialize(&serializer)?;
         debug!("results: {:#?}", &result);
         Ok(result)
     }

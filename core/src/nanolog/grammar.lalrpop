@@ -4,15 +4,20 @@ grammar;
 
 pub Expr: Expr = {
     <l:List> => Expr::List(l),
+    <m:Match> => Expr::Match(m.0, m.1),
     <s:Symbol> => Expr::Symbol(s),
     <v:Variable> => Expr::Variable(v),
 };
 
 List: Vec<Expr> = "(" <parts:(<Expr>)*> ")" => parts;
 
+Match: (String, String) = {
+  "(" <v:Variable> "=" <s:Symbol> ")" => (v, s)
+}
+
 Symbol: String = {
     <r#""[^"]*""#> => <>[1..<>.len() - 1].to_string(),
     <s:r"[a-zA-Z:\-\/._0-9]+"> => s.to_string()
 };
 
-Variable: String = <s:r"\?[a-zA-Z0-9]+"> => s.to_string();
+Variable: String = <s:r"\?[a-zA-Z:\-\/._0-9]+"> => s.to_string();

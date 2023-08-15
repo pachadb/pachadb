@@ -105,7 +105,7 @@ mod tests {
                     let relation = Term::Sym(format!("rel-{}", idx));
 
                     let vars = vec![
-                        Term::Var(format!("var-{}", u32::arbitrary(g))),
+                        Term::Var(format!("var-{}", u32::arbitrary(g)), None),
                         Term::Sym(format!("sym-{}", idx)),
                     ];
                     let subject = g.choose(&vars).unwrap().clone();
@@ -187,11 +187,8 @@ mod tests {
             query!(
                 "query0",
                 vec![
+                    var!("band"),
                     var!("who"),
-                    var!("who"),
-                    var!("band"),
-                    var!("band"),
-                    var!("band"),
                 ]
             ),
             vec![

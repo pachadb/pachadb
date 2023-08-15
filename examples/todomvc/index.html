@@ -65,18 +65,18 @@
       await refresh_list();
     });
 
-    async function refresh_list(status = "?status") {
-      let results = await db.query(`
-        ?what is-a todo-item
-        ?what text ?text
-        ?what status (?status = ${status})
-      `);
+    async function refresh_list(args) {
+      let status = args ? `(?status = ${args})` : "?status";
+      let results = await db.query(`(
+        ?todo_id is-a todo-item
+        ?todo_id text ?text
+        ?todo_id status ${status} 
+      )`);
 
       let list = document.querySelector("#todo-list");
       list.innerHTML = "";
       results
-        .map( r => ({ id: r.args[0].Sym, text: r.args[2].Sym, status }))
-        .sort((a, b) => b.id.localeCompare(a.id))
+        .sort((a, b) => b.todo_id.localeCompare(a.todo_id))
         .forEach((todo) => {
           let li = document.createElement("li");
           li.innerText = todo.text
@@ -87,7 +87,7 @@
             complete.addEventListener("click", async e => {
               await window.db.state([
                 {
-                  entity: todo.id,
+                  entity: todo.todo_id,
                   field: "status",
                   value: Pacha.Value.string("completed"),
                   source,
@@ -102,7 +102,7 @@
                 }
                 */
               ]);
-              await refresh_list(status)
+              await refresh_list(args)
             });
             li.appendChild(complete)
           }

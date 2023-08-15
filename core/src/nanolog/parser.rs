@@ -23,31 +23,33 @@ impl Parser {
         let mut args: HashMap<String, Term> = HashMap::default();
         let mut body = vec![];
 
-        for chunk in ast.chunks(3){
-
+        for chunk in ast.chunks(3) {
             let entity = self.expr_to_term(&chunk[0]);
             let field = self.expr_to_term(&chunk[1]);
             let value = self.expr_to_term(&chunk[2]);
 
-            if let Term::Var(name,_ ) = &entity {
+            if let Term::Var(name, _) = &entity {
                 args.insert(name.to_string(), entity.clone());
             }
 
-            if let Term::Var(name,_ ) = &field {
+            if let Term::Var(name, _) = &field {
                 args.insert(name.to_string(), field.clone());
             }
 
-            if let Term::Var(name,_ ) = &value {
+            if let Term::Var(name, _) = &value {
                 args.insert(name.to_string(), value.clone());
             }
 
             body.push(atom!(entity, field, value));
         }
 
+        let mut args: Vec<Term> = args.into_values().collect();
+        args.sort();
+
         // make them part of our query
         let head = Atom {
             relation: Term::Sym("query0".to_string()),
-            args: args.into_values().collect(),
+            args,
         };
 
         Ok(Rule { head, body })
@@ -57,6 +59,7 @@ impl Parser {
         match expr {
             Expr::Symbol(s) => Term::Sym(s.to_string()),
             Expr::Variable(v) => Term::Var(v.to_string(), None),
+            Expr::Match(v, s) => Term::Var(v.to_string(), Some(s.to_string())),
             Expr::List(_) => unimplemented!(),
         }
     }
@@ -88,7 +91,7 @@ impl FromStr for Rule {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{atom, query, rule, sym, var};
+    use crate::{atom, query, rule, sym, var, var_match};
 
     macro_rules! parse {
         ($e:expr) => {
@@ -155,6 +158,38 @@ mod tests {
     }
 
     #[test]
+    fn parse_compare_and_match() {
+        assert_eq!(
+            Parser
+                .parse(
+                    r#"( ?who likes ?what
+                     ?what is-a band
+                     ?what playsGenre (?genre = "Heavy Metal") )"#
+                )
+                .unwrap(),
+            rule!(
+                query!(
+                    "query0",
+                    vec![
+                        var_match!("genre", "Heavy Metal"),
+                        var!("what"),
+                        var!("who"),
+                    ]
+                ),
+                vec![
+                    atom!(var!("who"), sym!("likes"), var!("what")),
+                    atom!(var!("what"), sym!("is-a"), sym!("band")),
+                    atom!(
+                        var!("what"),
+                        sym!("playsGenre"),
+                        var_match!("genre", "Heavy Metal")
+                    ),
+                ]
+            )
+        );
+    }
+
+    #[test]
     fn parse_complex_rules() {
         assert_eq!(
             Parser
@@ -165,10 +200,7 @@ mod tests {
                 )
                 .unwrap(),
             rule!(
-                query!(
-                    "query0",
-                    vec![var!("who"), var!("what"), var!("what"), var!("what")]
-                ),
+                query!("query0", vec![var!("what"), var!("who")]),
                 vec![
                     atom!(var!("who"), sym!("likes"), var!("what")),
                     atom!(var!("what"), sym!("is-a"), sym!("band")),

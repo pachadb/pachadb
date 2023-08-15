@@ -17,7 +17,7 @@ impl Term {
     }
 }
 
-#[derive(Default, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Substitution {
     pub subs: Vec<(Term, Term)>,
 }
@@ -261,6 +261,13 @@ impl std::fmt::Debug for Rule {
 macro_rules! sym {
     ($term:expr) => {
         Term::Sym($term.to_string())
+    };
+}
+
+#[macro_export]
+macro_rules! var_match {
+    ($term:expr, $sym:expr) => {
+        Term::Var(format!("?{}", $term), Some($sym.to_string()))
     };
 }
 

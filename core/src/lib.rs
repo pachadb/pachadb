@@ -86,22 +86,22 @@ where
 
         let query0 = "query0".to_string();
         let mut results: Vec<HashMap<String, String>> = vec![];
-        for row in self.query_executor.execute(plan).await? {
+        'row: for row in self.query_executor.execute(plan).await? {
             if matches!(&row.relation, Term::Sym(s) if *s == query0) {
-                let row_map = headers
-                    .clone()
-                    .into_iter()
-                    .zip(row.args)
-                    .filter_map(|(k, v)| match (k, v) {
+                let mut row_map = HashMap::default();
+                for (k, v) in headers.clone().into_iter().zip(row.args) {
+                    match (k, v) {
                         (Term::Var(_name, Some(expected)), Term::Sym(value))
                             if expected != value =>
                         {
-                            None
+                            continue 'row;
                         }
-                        (Term::Var(name, _), Term::Sym(value)) => Some((name, value)),
+                        (Term::Var(name, _), Term::Sym(value)) => {
+                            row_map.insert(name, value);
+                        }
                         _ => unreachable!(),
-                    })
-                    .collect::<HashMap<String, String>>();
+                    }
+                }
                 results.push(row_map);
             }
         }
