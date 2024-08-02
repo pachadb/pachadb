@@ -1,5 +1,4 @@
 .wrangler
-warp-*
 .terraform*
 3rdparty
 node_modules
