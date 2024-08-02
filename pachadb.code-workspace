@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "model"
+		},
+		{
+			"path": "js-model"
+		}
+	],
+	"settings": {}
+}
