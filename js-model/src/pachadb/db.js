@@ -4,7 +4,7 @@ function createUniqueId() {
   return uuidv7();
 }
 
-const createDB = (datoms = [], txIdCounter = 1) => ({
+const createDB = (datoms = []) => ({
   datoms,
 });
 
@@ -12,28 +12,15 @@ const createDatom = (eId, a, v, txId, isAdded = true) => {
   return [eId, a, v, txId, isAdded];
 };
 
-const processFact = (fact, txId) => {
-  let entityId = createUniqueId();
+const processDatom = (txId, entityName, datom) => {
+  let entityId = `${entityName}:${createUniqueId()}`;
   let datoms = [];
 
-  for (const [attr, value] of Object.entries(fact)) {
-    // Note(Danni) - not yet needed, re-add when working on schema
-    // if (attr === "id") continue;
-
+  for (const [attr, value] of Object.entries(datom)) {
     if (Array.isArray(value)) {
       value.forEach((v) => {
-        // if (typeof v === "object" && v !== null) {
-        //   const [refId, nestedDatoms] = processFact(v);
-        //   datoms.push(createDatom(entityId, attr, refId, txId));
-        //   datoms = datoms.concat(nestedDatoms);
-        // } else {
         datoms.push(createDatom(entityId, attr, v, txId));
-        // }
       });
-      // } else if (typeof value === "object" && value !== null) {
-      //   const [refId, nestedDatoms] = processFact(value);
-      //   datoms.push(createDatom(entityId, attr, refId, txId));
-      //   datoms = datoms.concat(nestedDatoms);
     } else {
       datoms.push(createDatom(entityId, attr, value, txId));
     }
@@ -42,12 +29,12 @@ const processFact = (fact, txId) => {
   return [entityId, datoms];
 };
 
-const transact = (db, facts) => {
+const transact = (db, datoms, entityName) => {
   const txId = createUniqueId();
 
-  const newDatoms = facts.flatMap((fact) => {
-    const [_, factDatoms] = processFact(fact, txId);
-    return factDatoms;
+  const newDatoms = datoms.flatMap((datom) => {
+    const [_, datoms] = processDatom(txId, entityName, datom);
+    return datoms;
   });
 
   return {
@@ -57,14 +44,7 @@ const transact = (db, facts) => {
 };
 
 const insert = (db, entityName, facts) => {
-  const processedFacts = facts.map((obj) => {
-    const newObj = {};
-    for (const [key, value] of Object.entries(obj)) {
-      newObj[`${entityName}:${key}`] = value;
-    }
-    return newObj;
-  });
-  return transact(db, processedFacts);
+  return transact(db, facts, entityName);
 };
 
 // let db = createDB();
