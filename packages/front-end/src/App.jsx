@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import DB from "./pachadb/db.js";
-import Query from "./pachadb/query.js";
+import PachaDB from "pachadb";
 import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
   useEffect(() => {
     // Example usage
-    const db = DB.createDB();
+    const db = PachaDB.createDB();
 
     // Add some sample data
-    const updatedDb = DB.insert(db, "todos", [
+    const updatedDb = PachaDB.insert(db, "todos", [
       { title: "Code a bunch", status: "In Progress" },
       { title: "Review PRs", status: "Todo" },
       { title: "Write documentation", status: "Done" },
@@ -31,7 +30,7 @@ function App() {
       },
     };
 
-    const results = Query.executeQuery(updatedDb, query);
+    const results = PachaDB.Query.executeQuery(updatedDb, query);
     console.log("results", JSON.stringify(results, null, 2));
   }, []);
   return (

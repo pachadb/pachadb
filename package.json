@@ -1,0 +1,7 @@
+{
+    "name": "pacha-repo",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
+}

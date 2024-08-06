@@ -1,4 +1,5 @@
 import { uuidv7 } from "uuidv7";
+import Query from "./query";
 
 function createUniqueId() {
   return uuidv7();
@@ -62,4 +63,4 @@ const insert = (db, entityName, facts) => {
 //   },
 // ]);
 
-export default { createDB, insert };
+export default { createDB, insert, Query };
