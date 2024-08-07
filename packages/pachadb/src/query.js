@@ -1,9 +1,9 @@
 import { isEmpty as isEmptyObject } from "./obj.js";
 import Datom from "./datom.js";
 
-const matchCondition = (datom, condition) => {
+const matchCondition = (entity, condition) => {
   for (const [attr, value] of Object.entries(condition)) {
-    if (Datom.attribute(datom) === attr && Datom.value(datom) !== value) {
+    if (entity[attr] !== value) {
       return false;
     }
   }
@@ -11,8 +11,21 @@ const matchCondition = (datom, condition) => {
 };
 
 // Helper function to evaluate OR conditions
-const evaluateOr = (datom, orConditions) => {
-  return orConditions.some((condition) => matchCondition(datom, condition));
+const evaluateOr = (entity, orConditions) => {
+  return orConditions.some((condition) => matchCondition(entity, condition));
+};
+
+// Group datoms by entity ID
+const groupDatomsByEntity = (datoms) => {
+  const entities = {};
+  datoms.forEach((datom) => {
+    const [eId, a, v] = datom;
+    if (!entities[eId]) {
+      entities[eId] = {};
+    }
+    entities[eId][a] = v;
+  });
+  return entities;
 };
 
 // Main query execution function
@@ -21,16 +34,24 @@ const executeQuery = (db, query) => {
 
   for (const [entityName, entityQuery] of Object.entries(query)) {
     const whereClause = entityQuery.$?.where || {};
+    const entities = groupDatomsByEntity(db.datoms);
 
-    results[entityName] = db.datoms.filter((datom) => {
-      if (isEmptyObject(whereClause)) return true;
+    results[entityName] = Object.entries(entities)
+      .filter(([eId, entity]) => {
+        if (!eId.startsWith(`${entityName}:`)) {
+          return false;
+        }
 
-      if (whereClause.or) {
-        return evaluateOr(datom, whereClause.or);
-      }
+        if (isEmptyObject(whereClause)) return true;
 
-      return matchCondition(datom, whereClause);
-    });
+        if (whereClause.or) {
+          return evaluateOr(entity, whereClause.or);
+        }
+
+        return matchCondition(entity, whereClause);
+      })
+      .map(([eId, entity]) => Object.entries(entity).map(([a, v]) => [eId, a, v, null, true]))
+      .flat();
   }
 
   return results;
