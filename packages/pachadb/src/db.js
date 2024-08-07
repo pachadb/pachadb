@@ -1,5 +1,6 @@
 import { uuidv7 } from "uuidv7";
 import Query from "./query";
+import Datom from "./datom";
 
 function createUniqueId() {
   return uuidv7();
@@ -9,21 +10,17 @@ const createDB = (datoms = []) => ({
   datoms,
 });
 
-const createDatom = (eId, a, v, txId, isAdded = true) => {
-  return [eId, a, v, txId, isAdded];
-};
-
 const processDatom = (txId, entityName, datom) => {
-  let entityId = `${entityName}:${createUniqueId()}`;
+  let entityId = Datom.createEntityId(entityName, createUniqueId());
   let datoms = [];
 
   for (const [attr, value] of Object.entries(datom)) {
     if (Array.isArray(value)) {
       value.forEach((v) => {
-        datoms.push(createDatom(entityId, attr, v, txId));
+        datoms.push(Datom.create(entityId, attr, v, txId));
       });
     } else {
-      datoms.push(createDatom(entityId, attr, value, txId));
+      datoms.push(Datom.create(entityId, attr, value, txId));
     }
   }
 
