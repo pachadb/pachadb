@@ -1,39 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback} from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import DB from "./pachadb/db.js";
-import Query from "./pachadb/query.js";
+import Pacha from "../pachadb.js";
 import "./App.css";
 
+const useObject = (uri) => {
+  const [_, setTick] = useState(0);
+  const onUpdate = useCallback(() => setTick(t => t+1), []);
+  const objRef = useRef(Pacha.getObject(uri, {onUpdate }));
+  return objRef.current
+}
+
+let user_id = Pacha.uri("linear", "user");
 function App() {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    // Example usage
-    const db = DB.createDB();
-
-    // Add some sample data
-    const updatedDb = DB.insert(db, "todos", [
-      { title: "Code a bunch", status: "In Progress" },
-      { title: "Review PRs", status: "Todo" },
-      { title: "Write documentation", status: "Done" },
-    ]);
-
-    console.log("todos db", JSON.stringify(updatedDb, null, 2));
-
-    // Define a query
-    const query = {
-      todos: {
-        $: {
-          where: {
-            or: [{ title: "Code a bunch" }, { title: "Review PRs" }],
-          },
-        },
-      },
-    };
-
-    const results = Query.executeQuery(updatedDb, query);
-    console.log("results", JSON.stringify(results, null, 2));
-  }, []);
+  let user = useObject(user_id);
   return (
     <>
       <div>
@@ -46,7 +26,13 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
+        <button onClick={() => {
+          console.log(user.counter);
+          user.counter = (user.counter || 0) + 1;
+          user.save();
+        }}>
+          count is {user.counter}
+        </button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
