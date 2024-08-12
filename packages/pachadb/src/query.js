@@ -1,5 +1,4 @@
 import { isEmpty as isEmptyObject } from "./obj.js";
-import Datom from "./datom.js";
 
 const matchCondition = (entity, condition) => {
   for (const [attr, value] of Object.entries(condition)) {
@@ -29,12 +28,14 @@ const groupDatomsByEntity = (datoms) => {
 };
 
 // Main query execution function
-const executeQuery = (db, query) => {
+const executeQuery = (dbs, query) => {
   const results = {};
 
   for (const [entityName, entityQuery] of Object.entries(query)) {
+    const allDatoms = dbs.flatMap((db) => DB.datoms(db));
+
     const whereClause = entityQuery.$?.where || {};
-    const entities = groupDatomsByEntity(db.datoms);
+    const entities = groupDatomsByEntity(allDatoms);
 
     results[entityName] = Object.entries(entities)
       .filter(([eId, entity]) => {

@@ -5,6 +5,9 @@
   "scripts": {
     "start": "bun --watch index.js"
   },
+  "dependencies": {
+    "pachadb": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   }
