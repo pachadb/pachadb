@@ -1,4 +1,6 @@
 .wrangler
+.cloudflare/
+.fixtures/
 .terraform*
 3rdparty
 node_modules

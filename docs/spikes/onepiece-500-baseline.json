@@ -1,0 +1,13 @@
+{
+  "source": "https://s3.amazonaws.com/wikia_xml_dumps/o/on/onepiece_pages_current.xml.7z",
+  "archiveSha256": "c4e33cc6793425d9baa5f76a9f12f047d75dec135006093ed9357629a7d1f7bb",
+  "sample": "first 500 namespace-0 pages; at most 20 resolved outgoing links per page",
+  "pages": 500,
+  "redirects": 145,
+  "storedLinks": 5425,
+  "queries": [
+    { "start": "1439", "end": "1847", "hops": 2, "mustFind": true },
+    { "start": "1439", "end": "1524", "hops": 3, "mustFind": true },
+    { "start": "1439", "end": "1914", "hops": 4, "mustFind": true }
+  ]
+}

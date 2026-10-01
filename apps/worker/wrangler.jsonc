@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pachadb-feasibility",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "routes": [{ "pattern": "pachadb.leostera.dev", "custom_domain": true }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "PARTITION_DO", "class_name": "PartitionDO" },
+      { "name": "TRANSACTION_COORDINATOR_DO", "class_name": "TransactionCoordinatorDO" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PartitionDO", "TransactionCoordinatorDO"] }],
+  "observability": { "enabled": true, "traces": { "enabled": true } }
+}

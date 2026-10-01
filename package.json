@@ -1,0 +1,19 @@
+{
+  "name": "pachadb-workspace",
+  "private": true,
+  "packageManager": "bun@1.4.2",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "test": "bun test packages/core",
+    "test:facts": "bun scripts/fact-query-check.ts",
+    "typecheck": "bun node_modules/typescript/bin/tsc --noEmit -p packages/core/tsconfig.json && bun node_modules/typescript/bin/tsc --noEmit -p apps/worker/tsconfig.json && bun node_modules/typescript/bin/tsc --noEmit -p packages/onepiece-fixture/tsconfig.json && bun node_modules/typescript/bin/tsc --noEmit -p scripts/tsconfig.json",
+    "types:worker": "wrangler types apps/worker/worker-configuration.d.ts --config apps/worker/wrangler.jsonc --include-runtime false",
+    "test:worker": "bun scripts/spike-local.ts",
+    "dev": "wrangler dev --config apps/worker/wrangler.jsonc",
+    "deploy": "wrangler deploy --config apps/worker/wrangler.jsonc"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2",
+    "typescript": "5.9.3"
+  }
+}

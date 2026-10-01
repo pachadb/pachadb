@@ -1,0 +1,4 @@
+{
+  "extends": "../onepiece-fixture/tsconfig.json",
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

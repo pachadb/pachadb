@@ -1,5 +1,7 @@
 # PachaDB
 
+> A TypeScript/Workers feasibility port is underway alongside the existing Rust crates. See [the port RFD](docs/rfd-typescript-workers-fokosdb.md), [the One Piece graph spike](docs/spikes/onepiece-graph.md), and [the Worker setup](apps/worker/README.md). The deployed spike is an Access-protected diagnostic, not a production database API.
+
 Pacha is an embeddable, immutable, graph, edge database.
 
 Pacha is an **edge database**. This means you can run it on edge providers like

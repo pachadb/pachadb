@@ -1,0 +1,19 @@
+{
+  "name": "@pachadb/spike-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@pachadb/core": "workspace:*",
+    "effect": "4.0.0-rc.118",
+    "fokosdb": "https://pkg.pr.new/lambrospetrou/fokosdb@70e42ce"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260930.2",
+    "wrangler": "4.140.0"
+  }
+}
